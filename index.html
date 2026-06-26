@@ -421,17 +421,18 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
       }
     ],
 
-    footer: function() {
-      return {
-        margin:[50,0,50,60],
-        alignment:'center',
-        stack:[
-          { text:'________________________________' },
-          { text:encargado, bold:true },
-          { text:cargo }
-        ]
-      };
-    },
+footer: function() {
+  return {
+    margin:[50,0,50,60],
+    alignment:'center',
+    stack:[
+      { text:'________________________________________', margin:[0,20,0,5] },
+      { text:encargado, bold:true },
+      { text:cargo },
+      { text:'Subdirección de Comedores - MIDES', fontSize:8 }
+    ]
+  };
+}
 
     pageBreakBefore: function(currentNode) {
       if (tracker && currentNode && currentNode.pageNumbers) {
