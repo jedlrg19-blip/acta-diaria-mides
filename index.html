@@ -412,42 +412,48 @@ function construirDoc(d, fd, fs, lh, margenes, espacioFirma, tracker){
     fontSize:fs,
     lineHeight:lh
 },
-    content:[
-      { text:runs, alignment:'justify' },
-  {
-    unbreakable: true,
-    stack: [
-        {
-            text:'',
-            margin:[0,Math.max(8,espacioFirma),0,0]
-        },
+   footer: function(currentPage, pageCount) {
 
-        {
-            canvas:[
-                {
-                    type:'line',
-                    x1:(W-W*0.48)/2,
-                    y1:0,
-                    x2:(W-W*0.48)/2+W*0.48,
-                    y2:0,
-                    lineWidth:0.6
-                }
-            ]
-        },
+    if (currentPage !== pageCount) return '';
 
-        {
-            text:nombre,
-            bold:true,
-            alignment:'center',
-            margin:[0,3,0,0],
-            fontSize:fontFirma
-        },
-
-        {
-            text:cargo+' del Comedor Social',
-            alignment:'center',
-            fontSize:fontFirma
-        },
+    return {
+        margin: [45, 0, 45, 20],
+        stack: [
+            {
+                canvas: [{
+                    type: 'line',
+                    x1: (W-W*0.48)/2,
+                    y1: 0,
+                    x2: (W-W*0.48)/2 + W*0.48,
+                    y2: 0,
+                    lineWidth: 0.6
+                }]
+            },
+            {
+                text: nombre,
+                bold: true,
+                alignment: 'center',
+                margin: [0,3,0,0],
+                fontSize: fontFirma
+            },
+            {
+                text: cargo + ' del Comedor Social',
+                alignment: 'center',
+                fontSize: fontFirma
+            },
+            {
+                text: mun + ', ' + dep,
+                alignment: 'center',
+                fontSize: fontFirma
+            },
+            {
+                text: 'Subdirección de Comedores - MIDES',
+                alignment: 'center',
+                fontSize: fontFirma
+            }
+        ]
+    };
+}
 
         {
             text:mun+', '+dep,
