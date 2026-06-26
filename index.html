@@ -385,9 +385,16 @@ function generarRuns(d, fd){
 }
 
 /* ═══════════════ PDF (pdfmake) ═══════════════ */
+
+
 pdfMake.fonts = {
-  Helvetica: { normal:'Helvetica', bold:'Helvetica-Bold', italics:'Helvetica-Oblique', bolditalics:'Helvetica-BoldOblique' },
-  Roboto:    { normal:'Roboto-Regular.ttf', bold:'Roboto-Medium.ttf', italics:'Roboto-Italic.ttf', bolditalics:'Roboto-MediumItalic.ttf' }
+    Helvetica: {
+        normal: 'Helvetica.ttf',
+        bold: 'Helvetica-Bold.ttf',
+        italics: 'Helvetica-Oblique.ttf',
+        bolditalics: 'Helvetica-BoldOblique.ttf'
+    },
+    Roboto:    { normal:'Roboto-Regular.ttf', bold:'Roboto-Medium.ttf', italics:'Roboto-Italic.ttf', bolditalics:'Roboto-MediumItalic.ttf' }
 };
 
 /* Construye docDefinition con los parámetros dados */
