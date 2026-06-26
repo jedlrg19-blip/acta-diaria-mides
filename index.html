@@ -415,6 +415,7 @@ function construirDoc(d, fd, fs, lh, tracker){
   const nombre=String(d.nombre||'').toUpperCase().trim() || 'NO REGISTRADO';
   const cargo=capitalizar(fd.cargo||'Encargado');
   const mun=capitalizar(d.municipio), dep=capitalizar(d.departamento);
+  const modal=capitalizar(d.modalidad||'Fijo');
   const W=612-MARGEN_IZQ-MARGEN_DER;
   return {
     pageSize:'LETTER',
@@ -427,9 +428,10 @@ function construirDoc(d, fd, fs, lh, tracker){
       { unbreakable:true, margin:[0,GAP_FIRMA,0,0], stack:[
         { canvas:[{ type:'line', x1:(W-W*0.48)/2, y1:0, x2:(W-W*0.48)/2+W*0.48, y2:0, lineWidth:0.6 }] },
         { text:nombre, bold:true, alignment:'center', margin:[0,3,0,0] },
-        { text:cargo+' del Comedor Social', alignment:'center' },
+        { text:cargo+' de Comedor Social '+modal, alignment:'center' },
         { text:mun+', '+dep, alignment:'center' },
-        { text:'Subdirección de Comedores - MIDES', alignment:'center' }
+        { text:'Subdirección de Comedores', alignment:'center' },
+        { text:'Ministerio de Desarrollo Social', alignment:'center' }
       ]}
     ],
     pageBreakBefore:function(currentNode){
