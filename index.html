@@ -1,554 +1,100 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Asistente para la Generación de Actas — Acta Diaria</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
-<style>
-  :root{
-    --bg:#0b1422; --panel:#0f1b2e; --line:#1e3a5f; --txt:#f1f5f9;
-    --muted:#94a3b8; --accent:#2563eb; --ok:#059669; --warn:#b45309;
-  }
-  *{box-sizing:border-box;font-family:'Segoe UI',system-ui,Arial,sans-serif;}
-  body{margin:0;background:var(--bg);color:var(--txt);line-height:1.45;}
-  header{background:linear-gradient(90deg,#0d2137,#1e3a5f);padding:18px 20px;
-         border-bottom:2px solid var(--accent);}
-  header h1{margin:0;font-size:19px;}
-  header p{margin:4px 0 0;color:#cbd5e1;font-size:13px;}
-  .wrap{max-width:880px;margin:0 auto;padding:18px;}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
-        padding:16px 18px;margin-bottom:16px;}
-  .card h2{margin:0 0 4px;font-size:15px;color:#93c5fd;}
-  .card .sub{color:var(--muted);font-size:12px;margin:0 0 12px;}
-  .grid{display:grid;gap:12px;}
-  .g2{grid-template-columns:1fr 1fr;}
-  .g3{grid-template-columns:1fr 1fr 1fr;}
-  .g4{grid-template-columns:1fr 1fr 1fr 1fr;}
-  @media(max-width:680px){.g2,.g3,.g4{grid-template-columns:1fr;}}
-  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;}
-  input,select{width:100%;padding:9px 10px;background:#0b1422;color:var(--txt);
-        border:1px solid var(--line);border-radius:8px;font-size:14px;}
-  input:focus,select:focus{outline:none;border-color:var(--accent);}
-  .row-toggle{display:flex;align-items:center;gap:10px;margin-top:6px;}
-  .row-toggle input{width:auto;}
-  .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;}
-  button{padding:12px 18px;border:none;border-radius:9px;font-size:14px;font-weight:700;
-         cursor:pointer;color:#fff;transition:opacity .15s;}
-  button:disabled{opacity:.55;cursor:not-allowed;}
-  .b-primary{background:var(--accent);}
-  .b-primary:hover:not(:disabled){background:#1d4ed8;}
-  .b-ok{background:var(--ok);}
-  .b-ok:hover:not(:disabled){background:#047857;}
-  .b-ghost{background:#334155;}
-  .b-ghost:hover:not(:disabled){background:#475569;}
-  .hint{font-size:12px;color:var(--muted);margin-top:8px;}
-  .saved{font-size:13px;color:#34d399;margin-top:8px;display:none;}
-  .foot{color:var(--muted);font-size:11px;text-align:center;padding:18px;line-height:1.6;}
-  .priv{background:#0d2137;border:1px dashed #475569;border-radius:10px;padding:10px 12px;
-        font-size:12px;color:#cbd5e1;margin-bottom:16px;}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acta Diaria - Comedor Social MIDES</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
+  <style>
+    :root{--bg:#f5f7fb;--panel:#fff;--line:#d7deea;--ink:#172033;--muted:#65738a;--blue:#1f5fbf;--green:#0f8a5f;--red:#b42318;}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,system-ui,Arial,sans-serif;line-height:1.45}
+    header{background:#10243f;color:white;border-bottom:4px solid var(--blue)} .head{max-width:1120px;margin:auto;padding:18px 20px}.head h1{margin:0;font-size:22px}.head p{margin:4px 0 0;color:#c9d5e8}
+    main{max-width:1120px;margin:auto;padding:20px}.notice{border:1px solid #b8c7df;background:#eef4ff;border-radius:8px;padding:10px 12px;color:#33415c;margin-bottom:16px;font-size:14px}
+    section{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;padding:16px} h2{font-size:17px;margin:0 0 12px;color:#173b6c}.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+    label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:4px} input,select{width:100%;border:1px solid var(--line);border-radius:6px;background:#fff;padding:9px 10px;font-size:14px;color:var(--ink)} input:focus,select:focus{outline:2px solid #cfe0ff;border-color:var(--blue)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}.btn{border:0;border-radius:7px;padding:11px 16px;color:white;font-weight:700;cursor:pointer}.primary{background:var(--blue)}.ok{background:var(--green)}.ghost{background:#56657a}.danger{background:var(--red)}.btn:disabled{opacity:.6;cursor:wait}.small{font-size:12px;color:var(--muted)}
+    iframe{width:100%;height:720px;border:1px solid var(--line);border-radius:8px;background:white}.hidden{display:none}.inline{display:flex;gap:8px;align-items:center}.inline input{width:auto}
+    @media(max-width:860px){.g2,.g3,.g6{grid-template-columns:1fr} iframe{height:560px}}
+  </style>
 </head>
 <body>
-<header>
-  <h1>Asistente para la Generación de Actas</h1>
-  <p>Acta Diaria · Comedor Social — MIDES</p>
-</header>
+<header><div class="head"><h1>Acta Diaria - Comedor Social MIDES</h1><p>Generador local compatible con GitHub Pages</p></div></header>
+<main>
+  <div class="notice"><b>Privacidad:</b> los datos se procesan en este navegador. GitHub Pages solo hospeda esta página; no recibe el contenido del acta.</div>
 
-<div class="wrap">
+  <section><h2>Mis datos</h2><div class="grid g2">
+    <div><label>DPI / CUI</label><input id="dpi" inputmode="numeric" placeholder="0000 00000 0000"></div>
+    <div><label>Nombre completo</label><input id="nombre" placeholder="Nombre del encargado(a)"></div>
+    <div><label>Comedor Social o Dependencia</label><input id="comedor" placeholder="Ej. Cobán"></div>
+    <div><label>Modalidad</label><select id="modalidad"><option>Fijo</option><option>Móvil</option></select></div>
+    <div><label>Municipio</label><input id="municipio" placeholder="Ej. Cobán"></div>
+    <div><label>Departamento</label><input id="departamento" placeholder="Ej. Alta Verapaz"></div>
+    <div><label>Dirección del comedor</label><input id="direccion" placeholder="Dirección completa"></div>
+    <div><label>Cargo</label><select id="cargo"><option>Encargado</option><option>Encargada</option></select></div>
+  </div><div class="actions"><button class="btn ok" onclick="guardarDatos()">Guardar mis datos</button><button class="btn ghost" onclick="borrarDatos()">Borrar mis datos</button><span id="saved" class="small hidden">Datos guardados.</span></div></section>
 
-  <div class="priv">
-    🔒 <b>Tus datos no salen de este dispositivo.</b> Todo se procesa en tu navegador y el acta
-    se genera localmente. El botón "Guardar mis datos" los guarda solo en este navegador
-    (no en ningún servidor) para no volver a escribirlos.
-  </div>
+  <section><h2>Datos generales</h2><div class="grid g3">
+    <div><label>N° de Acta</label><input id="no_acta" inputmode="numeric" placeholder="Ej. 1"></div>
+    <div><label>Empresa proveedora</label><select id="empresa"><option>Banquetes de Guatemala, S.A.</option><option>Tecno Suministros, S.A.</option><option>Proveedora de Alimentos El Rosario</option></select></div>
+  </div></section>
 
-  <!-- ───────────── MIS DATOS ───────────── -->
-  <div class="card">
-    <h2>👤 Mis datos</h2>
-    <p class="sub">Escríbelos una vez y guárdalos en este dispositivo. Se rellenan solos la próxima vez.</p>
-    <div class="grid g2">
-      <div><label>DPI / CUI (13 dígitos)</label><input id="dpi" inputmode="numeric" placeholder="0000 00000 0000"></div>
-      <div><label>Nombre completo</label><input id="nombre" placeholder="Nombre del encargado(a)"></div>
-      <div><label>Comedor Social o Dependencia</label><input id="comedor" placeholder="Ej. Cobán"></div>
-      <div>
-        <label>Modalidad</label>
-        <select id="modalidad"><option>Fijo</option><option>Móvil</option></select>
-      </div>
-      <div><label>Municipio</label><input id="municipio" placeholder="Ej. Cobán"></div>
-      <div><label>Departamento</label><input id="departamento" placeholder="Ej. Alta Verapaz"></div>
-      <div><label>Dirección del comedor</label><input id="direccion" placeholder="Dirección completa"></div>
-      <div>
-        <label>Cargo</label>
-        <select id="cargo"><option>Encargado</option><option>Encargada</option></select>
-      </div>
-    </div>
-    <div class="btns">
-      <button class="b-ok" onclick="guardarDatos()">💾 Guardar mis datos</button>
-      <button class="b-ghost" onclick="borrarDatos()">🗑️ Borrar mis datos</button>
-    </div>
-    <div class="saved" id="savedMsg">✅ Datos guardados en este dispositivo.</div>
-  </div>
+  <section><h2>Desayuno</h2><div class="grid g6">
+    <div><label>Hora</label><input id="hora_des" placeholder="06:30"></div><div><label>Raciones</label><input id="rac_des" inputmode="numeric" placeholder="250"></div><div><label>Serie Envío</label><input id="serie_des" placeholder="A"></div><div><label>N° Envío</label><input id="envio_des" placeholder="00045"></div><div><label>Ticket inicial</label><input id="tick_des_ini" placeholder="0001"></div><div><label>Ticket final</label><input id="tick_des_fin" placeholder="0250"></div>
+  </div></section>
 
-  <!-- ───────────── DATOS GENERALES ───────────── -->
-  <div class="card">
-    <h2>1. Datos generales</h2>
-    <div class="grid g3">
-      <div><label>N° de Acta</label><input id="no_acta" inputmode="numeric" placeholder="Ej. 1"></div>
-      <div>
-        <label>Empresa proveedora</label>
-        <select id="empresa">
-          <option>Banquetes de Guatemala, S.A.</option>
-          <option>Tecno Suministros, S.A.</option>
-          <option>Proveedora de Alimentos El Rosario</option>
-        </select>
-      </div>
-    </div>
-  </div>
+  <section><h2>Almuerzo</h2><div class="grid g6">
+    <div><label>Hora</label><input id="hora_alm" placeholder="10:25"></div><div><label>Raciones</label><input id="rac_alm" inputmode="numeric" placeholder="350"></div><div><label>Serie Envío</label><input id="serie_alm" placeholder="B"></div><div><label>N° Envío</label><input id="envio_alm" placeholder="00046"></div><div><label>Ticket inicial</label><input id="tick_alm_ini" placeholder="0001"></div><div><label>Ticket final</label><input id="tick_alm_fin" placeholder="0350"></div>
+  </div></section>
 
-  <!-- ───────────── DESAYUNO ───────────── -->
-  <div class="card">
-    <h2>2. Desayuno</h2>
-    <div class="grid g4">
-      <div><label>Hora (HH:MM)</label><input id="hora_des" placeholder="06:30"></div>
-      <div><label>Raciones</label><input id="rac_des" inputmode="numeric" placeholder="250"></div>
-      <div><label>Serie Envío</label><input id="serie_des" placeholder="A"></div>
-      <div><label>N° Envío</label><input id="envio_des" placeholder="00045"></div>
-      <div><label>Ticket inicial</label><input id="tick_des_ini" placeholder="0001"></div>
-      <div><label>Ticket final</label><input id="tick_des_fin" placeholder="0250"></div>
-    </div>
-  </div>
+  <section><h2>Cierre e incidencias</h2><div class="grid g2">
+    <div><label>Sistema</label><select id="sistema"><option>Sistema de Comedores -SICOME-</option><option>Sistema de Comedores Aplicativo -SICOAPP-</option></select></div>
+    <div><label>Usuarios registrados en el sistema</label><input id="sicome" inputmode="numeric" placeholder="0"></div>
+    <div class="inline"><input type="checkbox" id="usa_hojas" onchange="hojasBox()"><label for="usa_hojas" style="margin:0">Hubo uso de Hojas de Registro</label></div>
+    <div id="box_hojas" class="hidden"><label>Usuarios en Hojas de Registro</label><input id="hojas" inputmode="numeric" placeholder="0"></div>
+    <div><label>¿Hubo incumplimiento en raciones?</label><select id="incump"><option>NO</option><option>SÍ</option></select></div>
+    <div><label>¿Llegó en el horario establecido?</label><select id="horario"><option>SÍ</option><option>NO</option></select></div>
+  </div></section>
 
-  <!-- ───────────── ALMUERZO ───────────── -->
-  <div class="card">
-    <h2>3. Almuerzo</h2>
-    <div class="grid g4">
-      <div><label>Hora (HH:MM)</label><input id="hora_alm" placeholder="10:25"></div>
-      <div><label>Raciones</label><input id="rac_alm" inputmode="numeric" placeholder="350"></div>
-      <div><label>Serie Envío</label><input id="serie_alm" placeholder="B"></div>
-      <div><label>N° Envío</label><input id="envio_alm" placeholder="00046"></div>
-      <div><label>Ticket inicial</label><input id="tick_alm_ini" placeholder="0001"></div>
-      <div><label>Ticket final</label><input id="tick_alm_fin" placeholder="0350"></div>
-    </div>
-  </div>
-
-  <!-- ───────────── CIERRE Y REGISTRO ───────────── -->
-  <div class="card">
-    <h2>4. Cierre y registro</h2>
-    <div class="grid g2">
-      <div>
-        <label>Sistema</label>
-        <select id="sistema">
-          <option>Sistema de Comedores -SICOME-</option>
-          <option>Sistema de Comedores Aplicativo -SICOAPP-</option>
-        </select>
-      </div>
-      <div><label>Usuarios registrados en el sistema</label><input id="sicome" inputmode="numeric" placeholder="0"></div>
-    </div>
-    <div class="row-toggle">
-      <input type="checkbox" id="usa_hojas" onchange="document.getElementById('box_hojas').style.display=this.checked?'block':'none'">
-      <label style="margin:0">Hubo uso de Hojas de Registro</label>
-    </div>
-    <div id="box_hojas" style="display:none;margin-top:10px">
-      <label>Usuarios en Hojas de Registro</label><input id="hojas" inputmode="numeric" placeholder="0">
-    </div>
-  </div>
-
-  <!-- ───────────── INCIDENCIAS ───────────── -->
-  <div class="card">
-    <h2>5. Incidencias del proveedor</h2>
-    <div class="grid g2">
-      <div>
-        <label>¿Hubo incumplimiento en raciones?</label>
-        <select id="incump"><option>NO</option><option>SÍ</option></select>
-      </div>
-      <div>
-        <label>¿Llegó en el horario establecido?</label>
-        <select id="horario"><option>SÍ</option><option>NO</option></select>
-      </div>
-    </div>
-  </div>
-
-  <div class="btns" style="margin-bottom:10px">
-    <button class="b-ghost" id="btnPreview" onclick="vistaPrevia()">👁️ Vista previa</button>
-    <button class="b-primary" id="btnDescargar" onclick="generarActa()">📄 Generar y descargar acta</button>
-  </div>
-  <p class="hint">El acta se ajusta automáticamente para caber en una sola hoja carta. Revisa la vista previa antes de descargarla.</p>
-
-  <!-- ───────────── VISTA PREVIA ───────────── -->
-  <div class="card" id="previewCard" style="display:none">
-    <h2>👁️ Vista previa del acta</h2>
-    <p class="sub">Así se verá el PDF. Si algo está mal, corrígelo arriba y vuelve a previsualizar.</p>
-    <iframe id="previewFrame" style="width:100%;height:640px;border:1px solid var(--line);
-            border-radius:8px;background:#fff"></iframe>
-    <div class="btns" style="margin-top:12px">
-      <button class="b-primary" id="btnDescargar2" onclick="generarActa()">📄 Descargar este acta</button>
-      <button class="b-ghost" onclick="cerrarPreview()">✖ Cerrar vista previa</button>
-    </div>
-  </div>
-
-</div>
-
-<div class="foot">
-  Asistente para la Generación de Actas — MIDES · Subdirección de Comedores.<br>
-  Página estática: no envía ni almacena datos en ningún servidor. Cada usuario genera su propia acta.
-</div>
-
+  <div class="actions"><button class="btn ghost" id="previewBtn" onclick="vistaPrevia()">Vista previa</button><button class="btn primary" id="downloadBtn" onclick="descargarActa()">Generar y descargar acta</button><span class="small">El PDF se ajusta automáticamente para intentar caber en una sola hoja carta.</span></div>
+  <section id="previewCard" class="hidden"><h2>Vista previa</h2><iframe id="previewFrame"></iframe></section>
+</main>
 <script>
-/* ═══════════════ Números a letras ═══════════════ */
-const U=['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez',
-'once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte',
-'veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'];
-const DEC={3:'treinta',4:'cuarenta',5:'cincuenta',6:'sesenta',7:'setenta',8:'ochenta',9:'noventa'};
-const CEN={2:'doscientos',3:'trescientos',4:'cuatrocientos',5:'quinientos',6:'seiscientos',7:'setecientos',8:'ochocientos',9:'novecientos'};
-function dos(n){ if(n<30) return U[n]; const t=Math.floor(n/10),u=n%10; return DEC[t]+(u?' y '+U[u]:''); }
-function tres(n){
-  if(n===0) return ''; if(n===100) return 'cien'; if(n<100) return dos(n);
-  const c=Math.floor(n/100),r=n%100; const base=(c===1)?'ciento':CEN[c];
-  return base+(r?' '+dos(r):'');
-}
-function apocopar(w){
-  if(w.endsWith('veintiuno')) return w.slice(0,-9)+'veintiún';
-  if(w.endsWith('uno')) return w.slice(0,-3)+'un';
-  return w;
-}
-function cardinal(n){
-  n=Math.floor(Math.abs(Number(n)||0));
-  if(n===0) return 'cero';
-  const mill=Math.floor(n/1000000), resto=n%1000000;
-  const miles=Math.floor(resto/1000), cien=resto%1000;
-  const out=[];
-  if(mill){ out.push(mill===1?'un millón':apocopar(cardinal(mill))+' millones'); }
-  if(miles){ out.push(miles===1?'mil':apocopar(tres(miles))+' mil'); }
-  if(cien) out.push(tres(cien));
-  return out.join(' ');
-}
-function numLetras(n){ return cardinal(n); }
-function numLetrasFem(n){
-  let t=cardinal(n).split('cientos').join('cientas').split('quinientos').join('quinientas');
-  if(t.endsWith('uno')) t=t.slice(0,-3)+'una';
-  return t;
-}
-function numLetrasMasc(n){
-  let t=cardinal(n);
-  if(t==='uno') return 'un';
-  if(t.endsWith('y uno')) return t.slice(0,-3)+'un';
-  return t;
-}
-function numLetrasEnvio(s){
-  s=String(s==null?'':s).trim();
-  if(!s) return 'cero';
-  const sin=s.replace(/^0+/,'');
-  const nceros=s.length-sin.length;
-  const ceros=Array(nceros).fill('cero').join(' ');
-  if(!sin) return Array(s.length).fill('cero').join(' ');
-  const resto=numLetras(parseInt(sin,10));
-  return ceros? (ceros+' '+resto).trim() : resto;
-}
-
-/* ═══════════════ Formato de texto ═══════════════ */
-function capitalizar(t){
-  if(!t) return '';
-  const exc=['de','la','el','los','las','y','en','del','a'];
-  const pal=String(t).toLowerCase().split(/\s+/).filter(Boolean);
-  const res=pal.map((p,i)=>(i===0||!exc.includes(p))?(p.charAt(0).toUpperCase()+p.slice(1)):p);
-  return res.join(' ').split('S.a.').join('S.A.');
-}
-function formatearCuiLegal(cui){
-  let c=String(cui==null?'':cui).split('.')[0].replace(/\D/g,'');
-  c=c.padStart(13,'0').slice(0,13);
-  const b1=c.slice(0,4),b2=c.slice(4,9),b3=c.slice(9);
-  function bloque(b){
-    const sin=b.replace(/^0+/,'');
-    const nc=b.length-sin.length;
-    const ceros='cero '.repeat(nc);
-    const resto=sin||'0';
-    return (ceros+numLetras(parseInt(resto,10))).trim();
-  }
-  return bloque(b1)+' espacio '+bloque(b2)+' espacio '+bloque(b3)+' ('+b1+' '+b2+' '+b3+')';
-}
-function ahoraGT(){
-  const fmt=new Intl.DateTimeFormat('en-US',{timeZone:'America/Guatemala',
-    year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',hour12:false});
-  const p={}; fmt.formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
-  let hour=parseInt(p.hour,10); if(hour===24) hour=0;
-  return {day:+p.day,month:+p.month,year:+p.year,hour,minute:parseInt(p.minute,10)};
-}
-function dos2(n){ return String(n).padStart(2,'0'); }
-function parseHora(s){ try{ const a=String(s).split(':'); return [parseInt(a[0],10)||0, parseInt(a[1],10)||0]; }catch(e){ return [0,0]; } }
-
-/* ═══════════════ Construcción del acta (runs con negritas) ═══════════════ */
-function generarRuns(d, fd){
-  const R=[]; const B=(t)=>R.push({text:t,bold:true}); const N=(t)=>R.push({text:t});
-
-  let encargado=String(d.nombre||'').toUpperCase().trim() || 'NO REGISTRADO';
-  const cui=formatearCuiLegal(d.dpi);
-  const mun=capitalizar(d.municipio), dep=capitalizar(d.departamento);
-  const comedor=capitalizar(d.comedor);
-  const empresaTxt=capitalizar(fd.empresa);
-  const cargo=capitalizar(fd.cargo||'Encargado');
-  const modal=capitalizar(d.modalidad||'Fijo');
-  const direccion=capitalizar(d.direccion||'Dirección no registrada');
-
-  const a=ahoraGT();
-  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const dia_l=numLetras(a.day), mes_n=MESES[a.month-1];
-  const hora_l=numLetrasFem(a.hour), min_l=numLetrasMasc(a.minute);
-  const lbl_h=a.hour===1?'hora':'horas', lbl_m=a.minute===1?'minuto':'minutos';
-  const art_h=a.hour===1?'la':'las', anio=a.year;
-  const no_acta=fd.no_acta||'0';
-
-  const [h_des,m_des]=parseHora(fd.hora_des), [h_alm,m_alm]=parseHora(fd.hora_alm);
-  const art_des=h_des===1?'la':'las', lbl_hd=h_des===1?'hora':'horas', lbl_md=m_des===1?'minuto':'minutos';
-  const art_alm=h_alm===1?'la':'las', lbl_ha=h_alm===1?'hora':'horas', lbl_ma=m_alm===1?'minuto':'minutos';
-
-  const r_des=fd.raciones_des||'0', r_alm=fd.raciones_alm||'0';
-  let total=0; try{ total=parseInt(r_des,10)+parseInt(r_alm,10); }catch(e){ total=0; }
-  const sicome=fd.sicome||'0', sistema=fd.sistema||'Sistema de Comedores -SICOME-';
-  const envd=fd.envio_des||'0', enva=fd.envio_alm||'0';
-  const tdi=fd.ticket_des_ini||'0', tdf=fd.ticket_des_fin||'0';
-  const tai=fd.ticket_alm_ini||'0', taf=fd.ticket_alm_fin||'0';
-  const serie_d=String(fd.serie_des||'').toUpperCase(), serie_a=String(fd.serie_alm||'').toUpperCase();
-  const incump=fd.incumplimiento||'NO', horario=fd.horario||'SÍ';
-  const enterado=cargo.toLowerCase()==='encargada'?'enterada':'enterado';
-
-  B('ACTA NÚMERO '+numLetras(no_acta).toUpperCase()+' GUION DOS MIL VEINTISÉIS ('+no_acta+'-'+anio+').');
-  N(' En el municipio de '+mun+', departamento de '+dep+', siendo '+art_h+' '+hora_l+' '+lbl_h+
-    ' con '+min_l+' '+lbl_m+' ('+dos2(a.hour)+':'+dos2(a.minute)+') del día '+dia_l+' ('+a.day+') de '+
-    mes_n+' del año dos mil veintiséis ('+anio+'), constituido en las instalaciones del Comedor Social '+
-    modal+' '+comedor+', ubicado en la '+direccion+', del municipio de '+mun+', departamento de '+dep+
-    '; yo, ');
-  B(encargado);
-  N(', me identifico con Documento Personal de Identificación (DPI) con Código Único de Identificación (CUI) número '+
-    cui+', emitido por el Registro Nacional de las Personas de la República de Guatemala, y actúo en mi calidad de ');
-  B(cargo+' de Comedores');
-  N(' de la Subdirección de Comedores adscrita a la Dirección de Prevención Social del Viceministerio de '+
-    'Prevención Social del Ministerio de Desarrollo Social, con el objeto de suscribir la presente Acta '+
-    'para hacer constar lo siguiente: ');
-
-  B('PRIMERO:');
-  N(' En cumplimiento a lo que establece el Manual Operativo del Programa Social \u201cComedor Social\u201d '+
-    'vigente, se procede a realizar el Cierre Administrativo Diario del Comedor Social, mediante la '+
-    'suscripción de la presente acta, dejando constancia que se realizó el conteo de las raciones de '+
-    'alimentos recibidas de la siguiente forma: a) Que las raciones de desayuno se recibieron a '+art_des+
-    ' '+numLetrasFem(h_des)+' '+lbl_hd+' con '+numLetrasMasc(m_des)+' '+lbl_md+' ('+dos2(h_des)+':'+dos2(m_des)+
-    '); y, b) Que las raciones de almuerzo se recibieron a '+art_alm+' '+numLetrasFem(h_alm)+' '+lbl_ha+
-    ' con '+numLetrasMasc(m_alm)+' '+lbl_ma+' ('+dos2(h_alm)+':'+dos2(m_alm)+'). Se deja constancia que en '+
-    'cada tiempo de comida se verificó el cumplimiento de las características organolépticas, así como, '+
-    'las medidas y/o peso de los alimentos, habiéndose realizado la respectiva prueba sensorial. ');
-
-  B('SEGUNDO:');
-  N(' Se verificó el número de Envío y de tickets electrónicos que respaldan la entrega de las raciones '+
-    'de alimentos, por lo que, se deja constancia que: a) En el tiempo de comida de desayuno: se entregaron '+
-    numLetrasFem(r_des)+' ('+r_des+') raciones de alimentos según Envío de la presente fecha, con serie '+
-    serie_d+' número '+numLetrasEnvio(envd)+' ('+envd+') de ');
-  B(empresaTxt);
-  N('; el rango de los tickets utilizados en este servicio fue del '+numLetrasEnvio(tdi)+' al '+
-    numLetrasEnvio(tdf)+' ('+tdi+' al '+tdf+'); b) En el tiempo de comida de almuerzo: se entregaron '+
-    numLetrasFem(r_alm)+' ('+r_alm+') raciones de alimentos según Envío de la presente fecha, serie '+
-    serie_a+' número '+numLetrasEnvio(enva)+' ('+enva+') de ');
-  B(empresaTxt);
-  N('; el rango de los tickets utilizados en este servicio fue del '+numLetrasEnvio(tai)+' al '+
-    numLetrasEnvio(taf)+' ('+tai+' al '+taf+'). Por lo que, se hace constar que efectivamente se '+
-    'entregaron el día de hoy un total de '+numLetrasFem(total)+' ('+total+') raciones de alimentos a la '+
-    'población objetivo y grupos de especial atención en el Comedor Social de mérito. ');
-
-  B('TERCERO:');
-  N(' Al cierre del servicio de alimentación, se hace constar que '+numLetrasFem(sicome)+' ('+sicome+
-    ') personas usuarias fueron registradas en el '+sistema);
-  if(fd.sw_hojas){
-    const hojas=fd.hojas||'0';
-    N(', y '+numLetrasFem(hojas)+' ('+hojas+') registradas mediante el uso de las Hojas de Registro de '+
-      'Usuarios e ingresadas al sistema. ');
-  } else { N('. '); }
-
-  B('CUARTO:');
-  if(incump==='SÍ'){
-    N(' Se deja constancia que SÍ hubo incumplimiento en la entrega de raciones de alimentos por parte '+
-      'de la empresa proveedora, adjuntando el informe correspondiente en el que se detalla lo ocurrido, ');
-  } else {
-    N(' Se deja constancia que NO hubo incumplimiento en la entrega de raciones de alimentos por parte '+
-      'de la empresa proveedora, ');
-  }
-  N('asimismo, se deja constancia que la empresa proveedora '+horario+' llegó en el horario establecido '+
-    'para la entrega de raciones de alimentos contratados. ');
-
-  N('Sin más que hacer constar, se da por finalizada la presente acta en el mismo lugar y fecha, a los '+
-    'catorce (14) minutos de su inicio, a la que se procede a dar lectura por quien suscribe y, '+enterado+
-    ' de su contenido, objeto, validez y efectos legales, acepta, ratifica y firma en una (1) hoja de '+
-    'papel bond carta, impresa únicamente en su anverso, debidamente autorizada por la Contraloría '+
-    'General de Cuentas.');
-
-  return R;
-}
-
-/* ═══════════════ PDF (pdfmake) ═══════════════ */
-pdfMake.fonts = {
-  Helvetica: { normal:'Helvetica', bold:'Helvetica-Bold', italics:'Helvetica-Oblique', bolditalics:'Helvetica-BoldOblique' },
-  Roboto:    { normal:'Roboto-Regular.ttf', bold:'Roboto-Medium.ttf', italics:'Roboto-Italic.ttf', bolditalics:'Roboto-MediumItalic.ttf' }
-};
-
-/* Construye docDefinition con los parámetros dados */
-function construirDoc(d, fd, fs, lh, margenes, espacioFirma){
-  const runs=generarRuns(d, fd);
-  const nombre=String(d.nombre||'').toUpperCase().trim() || 'NO REGISTRADO';
-  const cargo=capitalizar(fd.cargo||'Encargado');
-  const mun=capitalizar(d.municipio), dep=capitalizar(d.departamento);
-  const fontFirma=Math.max(6, fs-0.2);
-  const W=612-margenes[0]-margenes[2];
-  return {
-    pageSize:'LETTER',
-    pageMargins:margenes,
-    defaultStyle:{ font:'Roboto', fontSize:fs, lineHeight:lh },
-    content:[
-      { text:runs, alignment:'justify' },
-      { text:'', margin:[0,espacioFirma,0,0] },
-      { canvas:[{ type:'line', x1:(W-W*0.48)/2, y1:0, x2:(W-W*0.48)/2+W*0.48, y2:0, lineWidth:0.6 }] },
-      { text:nombre, bold:true, alignment:'center', margin:[0,3,0,0], fontSize:fontFirma },
-      { text:cargo+' del Comedor Social', alignment:'center', fontSize:fontFirma },
-      { text:mun+', '+dep, alignment:'center', fontSize:fontFirma },
-      { text:'Subdirección de Comedores - MIDES', alignment:'center', fontSize:fontFirma }
-    ]
-  };
-}
-
-/* Cuenta páginas del doc renderizado (promesa) */
-function contarPaginas(docDef){
-  return new Promise((resolve)=>{
-    pdfMake.createPdf(docDef).getBuffer(buf=>{
-      // Busca el número de páginas en el buffer PDF buscando /Count en el xref
-      const str=new TextDecoder('latin1').decode(buf);
-      const matches=[...str.matchAll(/\/Count\s+(\d+)/g)];
-      const pg=matches.length ? Math.max(...matches.map(m=>parseInt(m[1],10))) : 1;
-      resolve(pg);
-    });
-  });
-}
-
-/* Candidatos de ajuste (de holgado a comprimido) */
-const CANDIDATOS=[
-  {m:[120,90,45,35], ef:55, fs:10.0, lh:1.34},
-  {m:[120,82,45,32], ef:42, fs:9.5,  lh:1.28},
-  {m:[120,76,45,30], ef:36, fs:9.0,  lh:1.22},
-  {m:[115,70,42,28], ef:28, fs:8.5,  lh:1.16},
-  {m:[112,65,40,26], ef:22, fs:8.0,  lh:1.10},
-  {m:[108,60,38,24], ef:16, fs:7.5,  lh:1.05},
-  {m:[105,56,36,22], ef:12, fs:7.0,  lh:1.00},
-  {m:[100,52,34,20], ef:8,  fs:6.5,  lh:0.96},
-  {m:[96, 48,32,18], ef:5,  fs:6.0,  lh:0.92}
-];
-
-/* Auto-ajuste real: renderiza y verifica páginas */
-async function autoAjustar(d, fd){
-  for(const c of CANDIDATOS){
-    const doc=construirDoc(d, fd, c.fs, c.lh, c.m, c.ef);
-    const pags=await contarPaginas(doc);
-    if(pags<=1) return {doc, candidato:c};
-  }
-  // Si nada encaja (texto extremadamente largo), usa el más comprimido
-  const c=CANDIDATOS[CANDIDATOS.length-1];
-  return {doc:construirDoc(d, fd, c.fs, c.lh, c.m, c.ef), candidato:c};
-}
-
-/* ═══════════════ localStorage ═══════════════ */
-const KEY='mides_acta_misdatos_v1';
-const CAMPOS_DATOS=['dpi','nombre','comedor','modalidad','municipio','departamento','direccion','cargo'];
-
-function leerMisDatos(){
-  return {
-    dpi:val('dpi'), nombre:val('nombre'), comedor:val('comedor'),
-    modalidad:val('modalidad'), municipio:val('municipio'),
-    departamento:val('departamento'), direccion:val('direccion'), cargo:val('cargo')
-  };
-}
-function guardarDatos(){
-  const obj={}; CAMPOS_DATOS.forEach(c=>obj[c]=val(c));
-  try{
-    localStorage.setItem(KEY, JSON.stringify(obj));
-    const m=document.getElementById('savedMsg'); m.style.display='block';
-    setTimeout(()=>m.style.display='none', 2500);
-  }catch(e){ alert('No se pudieron guardar los datos en este navegador: '+e); }
-}
-function borrarDatos(){
-  try{ localStorage.removeItem(KEY); }catch(e){}
-  CAMPOS_DATOS.forEach(c=>{ const el=document.getElementById(c); if(el) el.value=(c==='modalidad'?'Fijo':(c==='cargo'?'Encargado':'')); });
-  alert('Tus datos guardados se borraron de este dispositivo.');
-}
-function precargarDatos(){
-  let obj=null;
-  try{ obj=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
-  if(!obj) return;
-  CAMPOS_DATOS.forEach(c=>{ const el=document.getElementById(c); if(el && obj[c]!=null) el.value=obj[c]; });
-}
-
-/* ═══════════════ Helpers UI ═══════════════ */
-function val(id){ const el=document.getElementById(id); return el? el.value.trim() : ''; }
-
-function setBtns(loading){
-  ['btnPreview','btnDescargar','btnDescargar2'].forEach(id=>{
-    const b=document.getElementById(id); if(!b) return;
-    b.disabled=loading;
-  });
-  document.getElementById('btnPreview').textContent   = loading ? '⏳ Ajustando...' : '👁️ Vista previa';
-  document.getElementById('btnDescargar').textContent = loading ? '⏳ Generando...' : '📄 Generar y descargar acta';
-  const b2=document.getElementById('btnDescargar2');
-  if(b2) b2.textContent = loading ? '⏳ Generando...' : '📄 Descargar este acta';
-}
-
-function leerFormData(){
-  const d=leerMisDatos();
-  if(!d.nombre || !d.dpi){ alert('Escribe al menos tu Nombre y DPI en "Mis datos".'); return null; }
-  const fd={
-    no_acta:val('no_acta'), cargo:d.cargo, empresa:val('empresa'),
-    hora_des:val('hora_des'), raciones_des:val('rac_des'), serie_des:val('serie_des'),
-    envio_des:val('envio_des'), ticket_des_ini:val('tick_des_ini'), ticket_des_fin:val('tick_des_fin'),
-    hora_alm:val('hora_alm'), raciones_alm:val('rac_alm'), serie_alm:val('serie_alm'),
-    envio_alm:val('envio_alm'), ticket_alm_ini:val('tick_alm_ini'), ticket_alm_fin:val('tick_alm_fin'),
-    sistema:val('sistema'), sicome:val('sicome'),
-    sw_hojas:document.getElementById('usa_hojas').checked, hojas:val('hojas'),
-    incumplimiento:val('incump'), horario:val('horario')
-  };
-  return {d, fd};
-}
-
-/* ═══════════════ Acciones ═══════════════ */
-async function vistaPrevia(){
-  const form=leerFormData(); if(!form) return;
-  setBtns(true);
-  try{
-    const {doc}=await autoAjustar(form.d, form.fd);
-    pdfMake.createPdf(doc).getDataUrl(url=>{
-      document.getElementById('previewFrame').src=url;
-      document.getElementById('previewCard').style.display='block';
-      document.getElementById('previewCard').scrollIntoView({behavior:'smooth',block:'start'});
-      setBtns(false);
-    });
-  }catch(e){
-    setBtns(false);
-    alert('No se pudo generar la vista previa: '+e);
-  }
-}
-
-async function generarActa(){
-  const form=leerFormData(); if(!form) return;
-  setBtns(true);
-  try{
-    const {doc, candidato}=await autoAjustar(form.d, form.fd);
-    const na=(form.fd.no_acta||'acta').replace(/[^0-9A-Za-z_-]/g,'');
-    pdfMake.createPdf(doc).download('Acta_Diaria_'+na+'.pdf', ()=>{ setBtns(false); });
-  }catch(e){
-    setBtns(false);
-    alert('No se pudo generar el acta: '+e);
-  }
-}
-
-function cerrarPreview(){
-  document.getElementById('previewCard').style.display='none';
-  document.getElementById('previewFrame').src='';
-}
-
-window.addEventListener('DOMContentLoaded', precargarDatos);
+pdfMake.fonts={Roboto:{normal:'Roboto-Regular.ttf',bold:'Roboto-Medium.ttf',italics:'Roboto-Italic.ttf',bolditalics:'Roboto-MediumItalic.ttf'}};
+const KEY='mides_acta_misdatos_v2';
+const U=['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'];
+const DEC={3:'treinta',4:'cuarenta',5:'cincuenta',6:'sesenta',7:'setenta',8:'ochenta',9:'noventa'}, CEN={2:'doscientos',3:'trescientos',4:'cuatrocientos',5:'quinientos',6:'seiscientos',7:'setecientos',8:'ochocientos',9:'novecientos'};
+function dos(n){if(n<30)return U[n];const t=Math.floor(n/10),u=n%10;return DEC[t]+(u?' y '+U[u]:'')}
+function tres(n){if(n===0)return'';if(n===100)return'cien';if(n<100)return dos(n);const c=Math.floor(n/100),r=n%100;return(c===1?'ciento':CEN[c])+(r?' '+dos(r):'')}
+function apocopar(w){if(w.endsWith('veintiuno'))return w.slice(0,-9)+'veintiún';if(w.endsWith('uno'))return w.slice(0,-3)+'un';return w}
+function cardinal(n){n=Math.floor(Math.abs(Number(n)||0));if(n===0)return'cero';const mill=Math.floor(n/1000000),resto=n%1000000,miles=Math.floor(resto/1000),cien=resto%1000,out=[];if(mill)out.push(mill===1?'un millón':apocopar(cardinal(mill))+' millones');if(miles)out.push(miles===1?'mil':apocopar(tres(miles))+' mil');if(cien)out.push(tres(cien));return out.join(' ')}
+function numLetras(n){return cardinal(n)} function numFem(n){let t=cardinal(n).replaceAll('cientos','cientas').replaceAll('quinientos','quinientas');if(t.endsWith('uno'))t=t.slice(0,-3)+'una';return t} function numMasc(n){let t=cardinal(n);if(t==='uno')return'un';if(t.endsWith('y uno'))return t.slice(0,-3)+'un';return t}
+function numEnvio(s){s=String(s??'').trim();if(!s)return'cero';const sin=s.replace(/^0+/,'');const n=s.length-sin.length;const ceros=Array(n).fill('cero').join(' ');if(!sin)return Array(s.length).fill('cero').join(' ');return(ceros+' '+numLetras(parseInt(sin,10))).trim()}
+function cap(t){if(!t)return'';const exc=['de','la','el','los','las','y','en','del','a'];return String(t).toLowerCase().split(/\s+/).filter(Boolean).map((p,i)=>(i===0||!exc.includes(p))?p.charAt(0).toUpperCase()+p.slice(1):p).join(' ').replaceAll('S.a.','S.A.')}
+function cuiLegal(cui){let c=String(cui??'').split('.')[0].replace(/\D/g,'').padStart(13,'0').slice(0,13);const bs=[c.slice(0,4),c.slice(4,9),c.slice(9)];function b(x){const sin=x.replace(/^0+/,'');const nc=x.length-sin.length;return(('cero '.repeat(nc)) + numLetras(parseInt(sin||'0',10))).trim()}return b(bs[0])+' espacio '+b(bs[1])+' espacio '+b(bs[2])+' ('+bs[0]+' '+bs[1]+' '+bs[2]+')'}
+function gtNow(){const fmt=new Intl.DateTimeFormat('en-US',{timeZone:'America/Guatemala',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',hour12:false});const p={};fmt.formatToParts(new Date()).forEach(x=>p[x.type]=x.value);let h=parseInt(p.hour,10);if(h===24)h=0;return{day:+p.day,month:+p.month,year:+p.year,hour:h,minute:+p.minute}}
+function v(id){return(document.getElementById(id)?.value||'').trim()} function z(n){return String(n).padStart(2,'0')} function ph(s){const a=String(s||'0:0').split(':');return[parseInt(a[0],10)||0,parseInt(a[1],10)||0]}
+function generarRuns(d,f){const R=[],B=t=>R.push({text:t,bold:true}),N=t=>R.push({text:t});const encargado=(d.nombre||'').toUpperCase().trim()||'NO REGISTRADO',mun=cap(d.municipio),dep=cap(d.departamento),comedor=cap(d.comedor),empresa=cap(f.empresa),cargo=cap(d.cargo||'Encargado'),modal=cap(d.modalidad||'Fijo'),dir=cap(d.direccion||'Dirección no registrada');const a=gtNow(),M=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const [hd,md]=ph(f.hora_des),[ha,ma]=ph(f.hora_alm),rd=f.raciones_des||'0',ra=f.raciones_alm||'0',total=(parseInt(rd,10)||0)+(parseInt(ra,10)||0);const enterado=cargo.toLowerCase()==='encargada'?'enterada':'enterado';
+B('ACTA NÚMERO '+numLetras(f.no_acta||0).toUpperCase()+' GUION DOS MIL VEINTISÉIS ('+(f.no_acta||0)+'-'+a.year+').');
+N(' En el municipio de '+mun+', departamento de '+dep+', siendo '+(a.hour===1?'la':'las')+' '+numFem(a.hour)+' '+(a.hour===1?'hora':'horas')+' con '+numMasc(a.minute)+' '+(a.minute===1?'minuto':'minutos')+' ('+z(a.hour)+':'+z(a.minute)+') del día '+numLetras(a.day)+' ('+a.day+') de '+M[a.month-1]+' del año dos mil veintiséis ('+a.year+'), constituido en las instalaciones del Comedor Social '+modal+' '+comedor+', ubicado en la '+dir+', del municipio de '+mun+', departamento de '+dep+'; yo, ');B(encargado);N(', me identifico con Documento Personal de Identificación (DPI) con Código Único de Identificación (CUI) número '+cuiLegal(d.dpi)+', emitido por el Registro Nacional de las Personas de la República de Guatemala, y actúo en mi calidad de ');B(cargo+' de Comedores');N(' de la Subdirección de Comedores adscrita a la Dirección de Prevención Social del Viceministerio de Prevención Social del Ministerio de Desarrollo Social, con el objeto de suscribir la presente Acta para hacer constar lo siguiente: ');
+B('PRIMERO:');N(' En cumplimiento a lo que establece el Manual Operativo del Programa Social “Comedor Social” vigente, se procede a realizar el Cierre Administrativo Diario del Comedor Social, mediante la suscripción de la presente acta, dejando constancia que se realizó el conteo de las raciones de alimentos recibidas de la siguiente forma: a) Que las raciones de desayuno se recibieron a '+(hd===1?'la':'las')+' '+numFem(hd)+' '+(hd===1?'hora':'horas')+' con '+numMasc(md)+' '+(md===1?'minuto':'minutos')+' ('+z(hd)+':'+z(md)+'); y, b) Que las raciones de almuerzo se recibieron a '+(ha===1?'la':'las')+' '+numFem(ha)+' '+(ha===1?'hora':'horas')+' con '+numMasc(ma)+' '+(ma===1?'minuto':'minutos')+' ('+z(ha)+':'+z(ma)+'). Se deja constancia que en cada tiempo de comida se verificó el cumplimiento de las características organolépticas, así como, las medidas y/o peso de los alimentos, habiéndose realizado la respectiva prueba sensorial. ');
+B('SEGUNDO:');N(' Se verificó el número de Envío y de tickets electrónicos que respaldan la entrega de las raciones de alimentos, por lo que, se deja constancia que: a) En el tiempo de comida de desayuno: se entregaron '+numFem(rd)+' ('+rd+') raciones de alimentos según Envío de la presente fecha, con serie '+(f.serie_des||'').toUpperCase()+' número '+numEnvio(f.envio_des)+' ('+f.envio_des+') de ');B(empresa);N('; el rango de los tickets utilizados en este servicio fue del '+numEnvio(f.ticket_des_ini)+' al '+numEnvio(f.ticket_des_fin)+' ('+f.ticket_des_ini+' al '+f.ticket_des_fin+'); b) En el tiempo de comida de almuerzo: se entregaron '+numFem(ra)+' ('+ra+') raciones de alimentos según Envío de la presente fecha, serie '+(f.serie_alm||'').toUpperCase()+' número '+numEnvio(f.envio_alm)+' ('+f.envio_alm+') de ');B(empresa);N('; el rango de los tickets utilizados en este servicio fue del '+numEnvio(f.ticket_alm_ini)+' al '+numEnvio(f.ticket_alm_fin)+' ('+f.ticket_alm_ini+' al '+f.ticket_alm_fin+'). Por lo que, se hace constar que efectivamente se entregaron el día de hoy un total de '+numFem(total)+' ('+total+') raciones de alimentos a la población objetivo y grupos de especial atención en el Comedor Social de mérito. ');
+B('TERCERO:');N(' Al cierre del servicio de alimentación, se hace constar que '+numFem(f.sicome||0)+' ('+(f.sicome||0)+') personas usuarias fueron registradas en el '+f.sistema);if(f.sw_hojas)N(', y '+numFem(f.hojas||0)+' ('+(f.hojas||0)+') registradas mediante el uso de las Hojas de Registro de Usuarios e ingresadas al sistema. ');else N('. ');
+B('CUARTO:');N((f.incumplimiento==='SÍ'?' Se deja constancia que SÍ hubo incumplimiento en la entrega de raciones de alimentos por parte de la empresa proveedora, adjuntando el informe correspondiente en el que se detalla lo ocurrido, ':' Se deja constancia que NO hubo incumplimiento en la entrega de raciones de alimentos por parte de la empresa proveedora, ')+'asimismo, se deja constancia que la empresa proveedora '+f.horario+' llegó en el horario establecido para la entrega de raciones de alimentos contratados. ');
+N('Sin más que hacer constar, se da por finalizada la presente acta en el mismo lugar y fecha, a los catorce (14) minutos de su inicio, a la que se procede a dar lectura por quien suscribe y, '+enterado+' de su contenido, objeto, validez y efectos legales, acepta, ratifica y firma en una (1) hoja de papel bond carta, impresa únicamente en su anverso, debidamente autorizada por la Contraloría General de Cuentas.');return R}
+function leerMisDatos(){return{dpi:v('dpi'),nombre:v('nombre'),comedor:v('comedor'),modalidad:v('modalidad'),municipio:v('municipio'),departamento:v('departamento'),direccion:v('direccion'),cargo:v('cargo')}}
+function leerForm(){const d=leerMisDatos();if(!d.nombre||!d.dpi){alert('Escribe al menos Nombre completo y DPI.');return null}return{d,fd:{no_acta:v('no_acta'),empresa:v('empresa'),hora_des:v('hora_des'),raciones_des:v('rac_des'),serie_des:v('serie_des'),envio_des:v('envio_des'),ticket_des_ini:v('tick_des_ini'),ticket_des_fin:v('tick_des_fin'),hora_alm:v('hora_alm'),raciones_alm:v('rac_alm'),serie_alm:v('serie_alm'),envio_alm:v('envio_alm'),ticket_alm_ini:v('tick_alm_ini'),ticket_alm_fin:v('tick_alm_fin'),sistema:v('sistema'),sicome:v('sicome'),sw_hojas:document.getElementById('usa_hojas').checked,hojas:v('hojas'),incumplimiento:v('incump'),horario:v('horario')}}}
+function docDef(d,fd,c){const runs=generarRuns(d,fd),W=612-c.m[0]-c.m[2],nombre=(d.nombre||'').toUpperCase().trim()||'NO REGISTRADO',cargo=cap(d.cargo||'Encargado'),mun=cap(d.municipio),dep=cap(d.departamento);return{pageSize:'LETTER',pageMargins:c.m,defaultStyle:{font:'Roboto',fontSize:c.fs,lineHeight:c.lh},content:[{text:runs,alignment:'justify'},{text:'',margin:[0,c.ef,0,0]},{canvas:[{type:'line',x1:(W-W*.48)/2,y1:0,x2:(W-W*.48)/2+W*.48,y2:0,lineWidth:.6}]},{text:nombre,bold:true,alignment:'center',margin:[0,3,0,0],fontSize:Math.max(6,c.fs-.2)},{text:cargo+' del Comedor Social',alignment:'center',fontSize:Math.max(6,c.fs-.2)},{text:mun+', '+dep,alignment:'center',fontSize:Math.max(6,c.fs-.2)},{text:'Subdirección de Comedores - MIDES',alignment:'center',fontSize:Math.max(6,c.fs-.2)}]}}
+function countPages(doc){return new Promise(res=>pdfMake.createPdf(doc).getBuffer(buf=>{const str=new TextDecoder('latin1').decode(buf);const m=[...str.matchAll(/\/Count\s+(\d+)/g)];res(m.length?Math.max(...m.map(x=>+x[1])):1)}))}
+const C=[{m:[120,90,45,35],ef:55,fs:10,lh:1.34},{m:[120,76,45,30],ef:36,fs:9,lh:1.22},{m:[115,70,42,28],ef:28,fs:8.5,lh:1.16},{m:[108,60,38,24],ef:16,fs:7.5,lh:1.05},{m:[100,52,34,20],ef:8,fs:6.5,lh:.96},{m:[96,48,32,18],ef:5,fs:6,lh:.92}];
+async function ajustar(d,fd){for(const c of C){const doc=docDef(d,fd,c);if(await countPages(doc)<=1)return doc}return docDef(d,fd,C[C.length-1])}
+async function vistaPrevia(){const f=leerForm();if(!f)return;setBusy(true);const doc=await ajustar(f.d,f.fd);pdfMake.createPdf(doc).getDataUrl(url=>{document.getElementById('previewFrame').src=url;document.getElementById('previewCard').classList.remove('hidden');setBusy(false)})}
+async function descargarActa(){const f=leerForm();if(!f)return;setBusy(true);const doc=await ajustar(f.d,f.fd);pdfMake.createPdf(doc).download('Acta_Diaria_'+(f.fd.no_acta||'acta').replace(/[^\w-]/g,'')+'.pdf',()=>setBusy(false))}
+function setBusy(b){previewBtn.disabled=b;downloadBtn.disabled=b;previewBtn.textContent=b?'Ajustando...':'Vista previa';downloadBtn.textContent=b?'Generando...':'Generar y descargar acta'}
+function guardarDatos(){localStorage.setItem(KEY,JSON.stringify(leerMisDatos()));saved.classList.remove('hidden');setTimeout(()=>saved.classList.add('hidden'),2000)}
+function borrarDatos(){localStorage.removeItem(KEY);['dpi','nombre','comedor','municipio','departamento','direccion'].forEach(id=>document.getElementById(id).value='');modalidad.value='Fijo';cargo.value='Encargado'}
+function hojasBox(){box_hojas.classList.toggle('hidden',!usa_hojas.checked)}
+window.addEventListener('DOMContentLoaded',()=>{try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o)Object.keys(o).forEach(k=>{if(document.getElementById(k))document.getElementById(k).value=o[k]})}catch(e){}})
 </script>
 </body>
 </html>
