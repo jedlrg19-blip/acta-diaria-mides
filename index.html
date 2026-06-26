@@ -403,7 +403,7 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
 
   return {
     pageSize: 'LETTER',
-    pageMargins: margenes,
+    pageMargins:[50,50,50,90],
 
     defaultStyle: {
       font: 'Roboto',
@@ -418,16 +418,17 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
       }
     ],
 
-    footer: function(currentPage, pageCount) {
-      if (currentPage !== pageCount) return '';
-
-      return {
-        margin: [45, 0, 45, 20],
-        stack: [
-          // aquí puedes agregar firma o pie de página
-        ]
-      };
-    },
+footer: function() {
+  return {
+    margin:[50,0,50,20],
+    alignment:'center',
+    stack:[
+      {text:'________________________________'},
+      {text:encargado,bold:true},
+      {text:cargo + ' de Comedores'}
+    ]
+  };
+}
     // Cuenta las páginas reales según la maquetación de pdfmake.
     pageBreakBefore: function(currentNode) {
       if (tracker && currentNode && currentNode.pageNumbers) {
