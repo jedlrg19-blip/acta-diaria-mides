@@ -448,7 +448,7 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
 function contarPaginas(d, fd, c){
   return new Promise(function(resolve){
     const tracker={maxPage:1};
-    const doc=construirDoc(d, fd, c.fs, c.lh, c.m, c.ef, tracker);
+    const doc = construirDoc(d, fd, c.fs, c.lh, c.m, tracker);
     pdfMake.createPdf(doc).getBuffer(function(){ resolve({pags:tracker.maxPage, doc:doc}); });
   });
 }
