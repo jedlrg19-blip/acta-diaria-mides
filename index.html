@@ -406,7 +406,7 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
 
   return {
     pageSize: 'LETTER',
-    pageMargins: [50,50,50,90],
+    pageMargins: margenes || [70, 80, 70, 100],
 
     defaultStyle: {
       font: 'Roboto',
@@ -423,7 +423,7 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
 
     footer: function() {
       return {
-        margin:[50,0,50,20],
+        margin:[50,0,50,60],
         alignment:'center',
         stack:[
           { text:'________________________________' },
