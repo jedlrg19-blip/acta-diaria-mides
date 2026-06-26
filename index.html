@@ -397,16 +397,23 @@ pdfMake.fonts = {
 };
 
 /* Construye docDefinition con los parámetros dados */
-function construirDoc(d, fd, fs, lh, margenes, tracker)
-{
+function construirDoc(d, fd, fs, lh, margenes, espacioFirma, tracker){
+
   const runs = generarRuns(d, fd);
 
-  const encargado = (d.nombre || '').toUpperCase();
-  const cargo = d.cargo || 'Encargado';
+  const nombre = String(d.nombre || '').toUpperCase().trim() || 'NO REGISTRADO';
+  const cargo  = capitalizar(fd.cargo || 'Encargado');
+  const mun    = capitalizar(d.municipio);
+  const dep    = capitalizar(d.departamento);
+
+  const fontFirma = Math.max(6, fs - 0.2);
+  const W = 612 - margenes[0] - margenes[2];
 
   return {
+
     pageSize: 'LETTER',
-    pageMargins: margenes || [70, 80, 70, 100],
+
+    pageMargins: margenes,
 
     defaultStyle: {
       font: 'Roboto',
@@ -415,34 +422,89 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
     },
 
     content: [
+
       {
         text: runs,
         alignment: 'justify'
       }
+
     ],
 
-footer: function() {
-  return {
-    margin:[50,0,50,60],
-    alignment:'center',
-    stack:[
-      { text:'________________________________________', margin:[0,20,0,5] },
-      { text:encargado, bold:true },
-      { text:cargo },
-      { text:'Subdirección de Comedores - MIDES', fontSize:8 }
-    ]
-  };
-}
+    footer: function(currentPage, pageCount){
 
-    pageBreakBefore: function(currentNode) {
-      if (tracker && currentNode && currentNode.pageNumbers) {
-        currentNode.pageNumbers.forEach(function(p) {
-          if (p > tracker.maxPage) tracker.maxPage = p;
+      if(currentPage !== pageCount) return '';
+
+      return {
+
+        margin: [45,0,45,20],
+
+        stack: [
+
+          {
+            canvas: [
+              {
+                type:'line',
+                x1:(W-W*0.48)/2,
+                y1:0,
+                x2:(W-W*0.48)/2 + W*0.48,
+                y2:0,
+                lineWidth:0.6
+              }
+            ]
+          },
+
+          {
+            text:nombre,
+            bold:true,
+            alignment:'center',
+            margin:[0,3,0,0],
+            fontSize:fontFirma
+          },
+
+          {
+            text:cargo + ' del Comedor Social',
+            alignment:'center',
+            fontSize:fontFirma
+          },
+
+          {
+            text:mun + ', ' + dep,
+            alignment:'center',
+            fontSize:fontFirma
+          },
+
+          {
+            text:'Subdirección de Comedores - MIDES',
+            alignment:'center',
+            fontSize:fontFirma
+          }
+
+        ]
+
+      };
+
+    },
+
+    pageBreakBefore:function(currentNode){
+
+      if(tracker && currentNode && currentNode.pageNumbers){
+
+        currentNode.pageNumbers.forEach(function(p){
+
+          if(p > tracker.maxPage){
+            tracker.maxPage = p;
+          }
+
         });
+
       }
+
       return false;
+
     }
+
   };
+
 }
 /* Cuenta páginas usando la maquetación REAL de pdfmake (no parsea el PDF,
    porque pdfmake lo comprime y el texto /Count no aparece). */
@@ -456,10 +518,13 @@ function contarPaginas(d, fd, c){
 
 /* Candidatos de ajuste (de holgado a comprimido) */
 const CANDIDATOS=[
-  {m:[70,80,70,100], ef:40, fs:10.2, lh:1.35},
-  {m:[70,75,70,95], ef:30, fs:9.8, lh:1.30},
-  {m:[65,70,65,90], ef:20, fs:9.4, lh:1.25},
-  {m:[60,65,60,85], ef:10, fs:9.0, lh:1.20}
+  {m:[120,90,45,70], ef:0, fs:10.0, lh:1.34},
+  {m:[120,82,45,68], ef:0, fs:9.5, lh:1.28},
+  {m:[120,76,45,64], ef:0, fs:9.0, lh:1.22},
+  {m:[115,70,42,60], ef:0, fs:8.5, lh:1.16},
+  {m:[112,65,40,56], ef:0, fs:8.0, lh:1.10},
+  {m:[108,60,38,52], ef:0, fs:7.5, lh:1.05},
+  {m:[105,56,36,48], ef:0, fs:7.0, lh:1.00}
 ];
 
 /* Auto-ajuste real: renderiza y verifica páginas con la maquetación de pdfmake */
