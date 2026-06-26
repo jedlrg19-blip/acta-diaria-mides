@@ -6,6 +6,7 @@
 <title>Asistente para la Generación de Actas — Acta Diaria</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
+
 <style>
   :root{
     --bg:#0b1422; --panel:#0f1b2e; --line:#1e3a5f; --txt:#f1f5f9;
@@ -386,7 +387,7 @@ function generarRuns(d, fd){
 /* ═══════════════ PDF (pdfmake) ═══════════════ */
 pdfMake.fonts = {
   Roboto: { normal:'Roboto', bold:'Roboto-Bold', italics:'Roboto-Oblique', bolditalics:'Roboto-BoldOblique' },
-  Robototo:    { normal:'Robototo-Regular.ttf', bold:'Robototo-Medium.ttf', italics:'Robototo-Italic.ttf', bolditalics:'Robototo-MediumItalic.ttf' }
+  Roboto:    { normal:'Roboto-Regular.ttf', bold:'Roboto-Medium.ttf', italics:'Roboto-Italic.ttf', bolditalics:'Roboto-MediumItalic.ttf' }
 };
 
 /* Construye docDefinition con los parámetros dados */
