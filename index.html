@@ -388,13 +388,12 @@ function generarRuns(d, fd){
 
 
 pdfMake.fonts = {
-    Helvetica: {
-        normal: 'Helvetica.ttf',
-        bold: 'Helvetica-Bold.ttf',
-        italics: 'Helvetica-Oblique.ttf',
-        bolditalics: 'Helvetica-BoldOblique.ttf'
-    },
-    Roboto:    { normal:'Roboto-Regular.ttf', bold:'Roboto-Medium.ttf', italics:'Roboto-Italic.ttf', bolditalics:'Roboto-MediumItalic.ttf' }
+    Roboto: {
+        normal:'Roboto-Regular.ttf',
+        bold:'Roboto-Medium.ttf',
+        italics:'Roboto-Italic.ttf',
+        bolditalics:'Roboto-MediumItalic.ttf'
+    }
 };
 
 /* Construye docDefinition con los parámetros dados */
@@ -408,7 +407,11 @@ function construirDoc(d, fd, fs, lh, margenes, espacioFirma, tracker){
   return {
     pageSize:'LETTER',
     pageMargins:margenes,
-    defaultStyle:{ font:'Helvetica', fontSize:fs, lineHeight:lh },
+    defaultStyle:{
+    font:'Roboto',
+    fontSize:fs,
+    lineHeight:lh
+},
     content:[
       { text:runs, alignment:'justify' },
       { text:'', margin:[0,espacioFirma,0,0] },
