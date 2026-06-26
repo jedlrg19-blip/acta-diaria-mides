@@ -401,43 +401,12 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
 {
   const runs = generarRuns(d, fd);
 
-  return {
-    pageSize: 'LETTER',
-    pageMargins:[50,50,50,90],
-
-    defaultStyle: {
-      font: 'Roboto',
-      fontSize: fs,
-      lineHeight: lh
-    },
-
-function construirDoc(d, fd, fs, lh, margenes, tracker)
-{
-  const runs = generarRuns(d, fd);
-
   const encargado = (d.nombre || '').toUpperCase();
   const cargo = d.cargo || 'Encargado';
 
   return {
     pageSize: 'LETTER',
-    pageMargins: margenes,
-
-    defaultStyle: {
-      font: 'Roboto',
-      fontSize: fs,
-      lineHeight: lh
-    },
-
-function construirDoc(d, fd, fs, lh, margenes, tracker)
-{
-  const runs = generarRuns(d, fd);
-
-  const encargado = (d.nombre || '').toUpperCase();
-  const cargo = d.cargo || 'Encargado';
-
-  return {
-    pageSize: 'LETTER',
-    pageMargins: margenes,
+    pageMargins: [50,50,50,90],
 
     defaultStyle: {
       font: 'Roboto',
@@ -457,9 +426,9 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
         margin:[50,0,50,20],
         alignment:'center',
         stack:[
-          {text:'________________________________'},
-          {text:encargado,bold:true},
-          {text:cargo + ' de Comedores'}
+          { text:'________________________________' },
+          { text:encargado, bold:true },
+          { text:cargo }
         ]
       };
     },
@@ -474,7 +443,6 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
     }
   };
 }
-
 /* Cuenta páginas usando la maquetación REAL de pdfmake (no parsea el PDF,
    porque pdfmake lo comprime y el texto /Count no aparece). */
 function contarPaginas(d, fd, c){
