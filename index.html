@@ -411,6 +411,40 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
       lineHeight: lh
     },
 
+function construirDoc(d, fd, fs, lh, margenes, tracker)
+{
+  const runs = generarRuns(d, fd);
+
+  const encargado = (d.nombre || '').toUpperCase();
+  const cargo = d.cargo || 'Encargado';
+
+  return {
+    pageSize: 'LETTER',
+    pageMargins: margenes,
+
+    defaultStyle: {
+      font: 'Roboto',
+      fontSize: fs,
+      lineHeight: lh
+    },
+
+function construirDoc(d, fd, fs, lh, margenes, tracker)
+{
+  const runs = generarRuns(d, fd);
+
+  const encargado = (d.nombre || '').toUpperCase();
+  const cargo = d.cargo || 'Encargado';
+
+  return {
+    pageSize: 'LETTER',
+    pageMargins: margenes,
+
+    defaultStyle: {
+      font: 'Roboto',
+      fontSize: fs,
+      lineHeight: lh
+    },
+
     content: [
       {
         text: runs,
@@ -418,18 +452,18 @@ function construirDoc(d, fd, fs, lh, margenes, tracker)
       }
     ],
 
-footer: function() {
-  return {
-    margin:[50,0,50,20],
-    alignment:'center',
-    stack:[
-      {text:'________________________________'},
-      {text:encargado,bold:true},
-      {text:cargo + ' de Comedores'}
-    ]
-  };
-}
-    // Cuenta las páginas reales según la maquetación de pdfmake.
+    footer: function() {
+      return {
+        margin:[50,0,50,20],
+        alignment:'center',
+        stack:[
+          {text:'________________________________'},
+          {text:encargado,bold:true},
+          {text:cargo + ' de Comedores'}
+        ]
+      };
+    },
+
     pageBreakBefore: function(currentNode) {
       if (tracker && currentNode && currentNode.pageNumbers) {
         currentNode.pageNumbers.forEach(function(p) {
