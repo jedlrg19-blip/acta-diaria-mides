@@ -399,52 +399,46 @@ pdfMake.fonts = {
 /* Construye docDefinition con los parámetros dados */
 function construirDoc(d, fd, fs, lh, margenes, tracker)
 {
-  const runs=generarRuns(d, fd);
-  const nombre=String(d.nombre||'').toUpperCase().trim() || 'NO REGISTRADO';
-  const cargo=capitalizar(fd.cargo||'Encargado');
-  const mun=capitalizar(d.municipio), dep=capitalizar(d.departamento);
-  const fontFirma=Math.max(6, fs-0.2);
-  const W=612-margenes[0]-margenes[2];
-return {
+  const runs = generarRuns(d, fd);
+
+  return {
     pageSize: 'LETTER',
     pageMargins: margenes,
 
     defaultStyle: {
-        font: 'Roboto',
-        fontSize: fs,
-        lineHeight: lh
+      font: 'Roboto',
+      fontSize: fs,
+      lineHeight: lh
     },
 
     content: [
-        {
-            text: runs,
-            alignment: 'justify'
-        }
+      {
+        text: runs,
+        alignment: 'justify'
+      }
     ],
 
     footer: function(currentPage, pageCount) {
-        if (currentPage !== pageCount) return '';
+      if (currentPage !== pageCount) return '';
 
-        return {
-            margin: [45, 0, 45, 20],
-            stack: [
-                // línea
-                // nombre
-                // cargo
-                // municipio
-                // MIDES
-            ]
-        };
+      return {
+        margin: [45, 0, 45, 20],
+        stack: [
+          // aquí puedes agregar firma o pie de página
+        ]
+      };
+    },
     // Cuenta las páginas reales según la maquetación de pdfmake.
-pageBreakBefore: function(currentNode) {
-        if (tracker && currentNode && currentNode.pageNumbers) {
-            currentNode.pageNumbers.forEach(function(p) {
-                if (p > tracker.maxPage) tracker.maxPage = p;
-            });
-        }
-        return false;
+    pageBreakBefore: function(currentNode) {
+      if (tracker && currentNode && currentNode.pageNumbers) {
+        currentNode.pageNumbers.forEach(function(p) {
+          if (p > tracker.maxPage) tracker.maxPage = p;
+        });
+      }
+      return false;
     }
-};
+  };
+}
 
 /* Cuenta páginas usando la maquetación REAL de pdfmake (no parsea el PDF,
    porque pdfmake lo comprime y el texto /Count no aparece). */
