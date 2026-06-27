@@ -80,8 +80,8 @@
       <div><label>Departamento</label><input id="departamento" placeholder="Ej. Alta Verapaz"></div>
       <div><label>Dirección del comedor</label><input id="direccion" placeholder="Dirección completa"></div>
       <div>
-        <label>Cargo</label>
-        <select id="cargo"><option>Encargado</option><option>Encargada</option></select>
+        <label>Sexo</label>
+        <select id="sexo"><option>Hombre</option><option>Mujer</option></select>
       </div>
     </div>
     <div class="btns">
@@ -116,7 +116,7 @@
       <div><label>Serie Envío</label><input id="serie_des" placeholder="A"></div>
       <div><label>N° Envío</label><input id="envio_des" placeholder="00045"></div>
       <div><label>Ticket inicial</label><input id="tick_des_ini" placeholder="0001"></div>
-      <div><label>Ticket final</label><input id="tick_des_fin" placeholder="0250"></div>
+      <div><label>Ticket final (auto)</label><input id="tick_des_fin" placeholder="0250"></div>
     </div>
   </div>
 
@@ -129,7 +129,7 @@
       <div><label>Serie Envío</label><input id="serie_alm" placeholder="B"></div>
       <div><label>N° Envío</label><input id="envio_alm" placeholder="00046"></div>
       <div><label>Ticket inicial</label><input id="tick_alm_ini" placeholder="0001"></div>
-      <div><label>Ticket final</label><input id="tick_alm_fin" placeholder="0350"></div>
+      <div><label>Ticket final (auto)</label><input id="tick_alm_fin" placeholder="0350"></div>
     </div>
   </div>
 
@@ -194,7 +194,7 @@
 <div class="foot">
   Asistente para la Generación de Actas — MIDES · Subdirección de Comedores.<br>
   Página estática: no envía ni almacena datos en ningún servidor. Cada usuario genera su propia acta.<br>
-  <span style="opacity:.6">Generador v5 · Arial Narrow 9 pt (condensada incrustada) · márgenes del Word · auto-ajuste</span>
+  <span style="opacity:.6">Generador v8 · Arial Narrow 9 pt · ticket final automático · singular/plural y enterado(a)</span>
 </div>
 
 <script>
@@ -283,13 +283,15 @@ function parseHora(s){ try{ const a=String(s).split(':'); return [parseInt(a[0],
 /* ═══════════════ Construcción del acta (runs con negritas) ═══════════════ */
 function generarRuns(d, fd){
   const R=[]; const B=(t)=>R.push({text:t,bold:true}); const N=(t)=>R.push({text:t});
+  const es1=(n)=>parseInt(n,10)===1;   // ¿la cantidad es exactamente 1? (singular/plural)
 
   let encargado=String(d.nombre||'').toUpperCase().trim() || 'NO REGISTRADO';
   const cui=formatearCuiLegal(d.dpi);
   const mun=capitalizar(d.municipio), dep=capitalizar(d.departamento);
   const comedor=capitalizar(d.comedor);
   const empresaTxt=capitalizar(fd.empresa);
-  const cargo=capitalizar(fd.cargo||'Encargado');
+  const sexo=(fd.sexo||'Hombre');
+  const cargo='Encargado';   // título NOMINAL del puesto (contrato): no varía por género
   const modal=capitalizar(d.modalidad||'Fijo');
   const direccion=capitalizar(d.direccion||'Dirección no registrada');
 
@@ -313,7 +315,7 @@ function generarRuns(d, fd){
   const tai=fd.ticket_alm_ini||'0', taf=fd.ticket_alm_fin||'0';
   const serie_d=String(fd.serie_des||'').toUpperCase(), serie_a=String(fd.serie_alm||'').toUpperCase();
   const incump=fd.incumplimiento||'NO', horario=fd.horario||'SÍ';
-  const enterado=cargo.toLowerCase()==='encargada'?'enterada':'enterado';
+  const enterado=sexo==='Mujer'?'enterada':'enterado';
 
   B('ACTA NÚMERO '+numLetras(no_acta).toUpperCase()+' GUION DOS MIL VEINTISÉIS ('+no_acta+'-'+anio+').');
   N(' En el municipio de '+mun+', departamento de '+dep+', siendo '+art_h+' '+hora_l+' '+lbl_h+
@@ -342,27 +344,30 @@ function generarRuns(d, fd){
 
   B('SEGUNDO:');
   N(' Se verificó el número de Envío y de tickets electrónicos que respaldan la entrega de las raciones '+
-    'de alimentos, por lo que, se deja constancia que: a) En el tiempo de comida de desayuno: se entregaron '+
-    numLetrasFem(r_des)+' ('+r_des+') raciones de alimentos según Envío de la presente fecha, con serie '+
+    'de alimentos, por lo que, se deja constancia que: a) En el tiempo de comida de desayuno: se entreg'+
+    (es1(r_des)?'ó':'aron')+' '+numLetrasFem(r_des)+' ('+r_des+') '+(es1(r_des)?'ración':'raciones')+
+    ' de alimentos según Envío de la presente fecha, con serie '+
     serie_d+' número '+numLetrasEnvio(envd)+' ('+envd+') de ');
   B(empresaTxt);
   N('; el rango de los tickets utilizados en este servicio fue del '+numLetrasEnvio(tdi)+' al '+
-    numLetrasEnvio(tdf)+' ('+tdi+' al '+tdf+'); b) En el tiempo de comida de almuerzo: se entregaron '+
-    numLetrasFem(r_alm)+' ('+r_alm+') raciones de alimentos según Envío de la presente fecha, serie '+
+    numLetrasEnvio(tdf)+' ('+tdi+' al '+tdf+'); b) En el tiempo de comida de almuerzo: se entreg'+
+    (es1(r_alm)?'ó':'aron')+' '+numLetrasFem(r_alm)+' ('+r_alm+') '+(es1(r_alm)?'ración':'raciones')+
+    ' de alimentos según Envío de la presente fecha, serie '+
     serie_a+' número '+numLetrasEnvio(enva)+' ('+enva+') de ');
   B(empresaTxt);
   N('; el rango de los tickets utilizados en este servicio fue del '+numLetrasEnvio(tai)+' al '+
     numLetrasEnvio(taf)+' ('+tai+' al '+taf+'). Por lo que, se hace constar que efectivamente se '+
-    'entregaron el día de hoy un total de '+numLetrasFem(total)+' ('+total+') raciones de alimentos a la '+
+    (es1(total)?'entregó':'entregaron')+' el día de hoy un total de '+numLetrasFem(total)+' ('+total+') '+
+    (es1(total)?'ración':'raciones')+' de alimentos a la '+
     'población objetivo y grupos de especial atención en el Comedor Social de mérito. ');
 
   B('TERCERO:');
   N(' Al cierre del servicio de alimentación, se hace constar que '+numLetrasFem(sicome)+' ('+sicome+
-    ') personas usuarias fueron registradas en el '+sistema);
+    ') '+(es1(sicome)?'persona usuaria fue registrada':'personas usuarias fueron registradas')+' en el '+sistema);
   if(fd.sw_hojas){
     const hojas=fd.hojas||'0';
-    N(', y '+numLetrasFem(hojas)+' ('+hojas+') registradas mediante el uso de las Hojas de Registro de '+
-      'Usuarios e ingresadas al sistema. ');
+    N(', y '+numLetrasFem(hojas)+' ('+hojas+') '+(es1(hojas)?'registrada':'registradas')+
+      ' mediante el uso de las Hojas de Registro de Usuarios e '+(es1(hojas)?'ingresada':'ingresadas')+' al sistema. ');
   } else { N('. '); }
 
   B('CUARTO:');
@@ -413,7 +418,7 @@ const GAP_FIRMA   = 70;    // separación texto–firma (≈ las líneas en blan
 function construirDoc(d, fd, fs, lh, tracker){
   const runs=generarRuns(d, fd);
   const nombre=String(d.nombre||'').toUpperCase().trim() || 'NO REGISTRADO';
-  const cargo=capitalizar(fd.cargo||'Encargado');
+  const cargo='Encargado';   // título NOMINAL del puesto (contrato): no varía por género
   const mun=capitalizar(d.municipio), dep=capitalizar(d.departamento);
   const modal=capitalizar(d.modalidad||'Fijo');
   const W=612-MARGEN_IZQ-MARGEN_DER;
@@ -480,13 +485,13 @@ async function autoAjustar(d, fd){
 
 /* ═══════════════ localStorage (mis datos en este navegador) ═══════════════ */
 const KEY='mides_acta_misdatos_v1';
-const CAMPOS_DATOS=['dpi','nombre','comedor','modalidad','municipio','departamento','direccion','cargo'];
+const CAMPOS_DATOS=['dpi','nombre','comedor','modalidad','municipio','departamento','direccion','sexo'];
 
 function leerMisDatos(){
   return {
     dpi:val('dpi'), nombre:val('nombre'), comedor:val('comedor'),
     modalidad:val('modalidad'), municipio:val('municipio'),
-    departamento:val('departamento'), direccion:val('direccion'), cargo:val('cargo')
+    departamento:val('departamento'), direccion:val('direccion'), sexo:val('sexo')
   };
 }
 function guardarDatos(){
@@ -499,7 +504,7 @@ function guardarDatos(){
 }
 function borrarDatos(){
   try{ localStorage.removeItem(KEY); }catch(e){}
-  CAMPOS_DATOS.forEach(c=>{ const el=document.getElementById(c); if(el) el.value=(c==='modalidad'?'Fijo':(c==='cargo'?'Encargado':'')); });
+  CAMPOS_DATOS.forEach(c=>{ const el=document.getElementById(c); if(el) el.value=(c==='modalidad'?'Fijo':(c==='sexo'?'Hombre':'')); });
   alert('Tus datos guardados se borraron de este dispositivo.');
 }
 function precargarDatos(){
@@ -511,6 +516,25 @@ function precargarDatos(){
 
 /* ═══════════════ Helpers UI ═══════════════ */
 function val(id){ const el=document.getElementById(id); return el? el.value.trim() : ''; }
+
+/* Ticket final automático = ticket inicial + raciones - 1 (conserva ceros a la izquierda) */
+function recalcTicketFinal(racId, iniId, finId){
+  const rac=parseInt(val(racId),10);
+  const iniStr=val(iniId).replace(/\s/g,'');
+  const ini=parseInt(iniStr,10);
+  if(!isFinite(rac) || rac<=0 || !isFinite(ini) || iniStr==='') return;
+  const fin=ini+rac-1;
+  const finEl=document.getElementById(finId);
+  if(finEl) finEl.value=String(fin).padStart(iniStr.replace(/\D/g,'').length, '0');
+}
+function wireTickets(){
+  [['rac_des','tick_des_ini','tick_des_fin'],['rac_alm','tick_alm_ini','tick_alm_fin']].forEach(function(t){
+    const rec=function(){ recalcTicketFinal(t[0],t[1],t[2]); };
+    const re=document.getElementById(t[0]), ie=document.getElementById(t[1]);
+    if(re) re.addEventListener('input', rec);
+    if(ie) ie.addEventListener('input', rec);
+  });
+}
 
 function setBtns(loading){
   ['btnPreview','btnDescargar','btnDescargar2'].forEach(id=>{
@@ -526,7 +550,7 @@ function leerFormData(){
   const d=leerMisDatos();
   if(!d.nombre || !d.dpi){ alert('Escribe al menos tu Nombre y DPI en "Mis datos".'); return null; }
   const fd={
-    no_acta:val('no_acta'), cargo:d.cargo, empresa:val('empresa'),
+    no_acta:val('no_acta'), sexo:(d.sexo||'Hombre'), empresa:val('empresa'),
     hora_des:val('hora_des'), raciones_des:val('rac_des'), serie_des:val('serie_des'),
     envio_des:val('envio_des'), ticket_des_ini:val('tick_des_ini'), ticket_des_fin:val('tick_des_fin'),
     hora_alm:val('hora_alm'), raciones_alm:val('rac_alm'), serie_alm:val('serie_alm'),
@@ -576,7 +600,7 @@ function cerrarPreview(){
   document.getElementById('previewFrame').src='';
 }
 
-window.addEventListener('DOMContentLoaded', precargarDatos);
+window.addEventListener('DOMContentLoaded', function(){ precargarDatos(); wireTickets(); });
 </script>
 </body>
 </html>
