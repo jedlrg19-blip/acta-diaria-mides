@@ -114,7 +114,7 @@
       <div><label>Hora (HH:MM)</label><input id="hora_des" placeholder="06:30"></div>
       <div><label>Raciones</label><input id="rac_des" inputmode="numeric" placeholder="250"></div>
       <div><label>Serie Envío</label><input id="serie_des" placeholder="A"></div>
-      <div><label>N° Envío</label><input id="envio_des" placeholder="00045"></div>
+      <div><label>N° Envío</label><input id="_des" placeholder="00045"></div>
       <div><label>Ticket inicial</label><input id="tick_des_ini" placeholder="0001"></div>
       <div><label>Ticket final (auto)</label><input id="tick_des_fin" placeholder="0250"></div>
     </div>
@@ -127,7 +127,7 @@
       <div><label>Hora (HH:MM)</label><input id="hora_alm" placeholder="10:25"></div>
       <div><label>Raciones</label><input id="rac_alm" inputmode="numeric" placeholder="350"></div>
       <div><label>Serie Envío</label><input id="serie_alm" placeholder="B"></div>
-      <div><label>N° Envío</label><input id="envio_alm" placeholder="00046"></div>
+      <div><label>N° Envío</label><input id="_alm" placeholder="00046"></div>
       <div><label>Ticket inicial</label><input id="tick_alm_ini" placeholder="0001"></div>
       <div><label>Ticket final (auto)</label><input id="tick_alm_fin" placeholder="0350"></div>
     </div>
@@ -238,7 +238,7 @@ function numLetrasMasc(n){
   if(t.endsWith('y uno')) return t.slice(0,-3)+'un';
   return t;
 }
-function numLetrasEnvio(s){
+function numLetras(s){
   s=String(s==null?'':s).trim();
   if(!s) return 'cero';
   const sin=s.replace(/^0+/,'');
@@ -310,7 +310,7 @@ function generarRuns(d, fd){
   const r_des=fd.raciones_des||'0', r_alm=fd.raciones_alm||'0';
   let total=0; try{ total=parseInt(r_des,10)+parseInt(r_alm,10); }catch(e){ total=0; }
   const sicome=fd.sicome||'0', sistema=fd.sistema||'Sistema de Comedores -SICOME-';
-  const envd=fd.envio_des||'0', enva=fd.envio_alm||'0';
+  const envd=fd._des||'0', enva=fd._alm||'0';
   const tdi=fd.ticket_des_ini||'0', tdf=fd.ticket_des_fin||'0';
   const tai=fd.ticket_alm_ini||'0', taf=fd.ticket_alm_fin||'0';
   const serie_d=String(fd.serie_des||'').toUpperCase(), serie_a=String(fd.serie_alm||'').toUpperCase();
@@ -324,7 +324,7 @@ function generarRuns(d, fd){
     modal+' '+comedor+', ubicado en la '+direccion+', del municipio de '+mun+', departamento de '+dep+
     '; yo, ');
   B(encargado);
-  N(', me identifico con Documento Personal de Identificación (DPI) con Código Único de Identificación (CUI) número '+
+  N(', me identifico con Documento Personal de Identificación (DPI) con Código Único de Identificación (CUI) '+
     cui+', emitido por el Registro Nacional de las Personas de la República de Guatemala, y actúo en mi calidad de ');
   B(cargo+' de Comedores');
   N(' de la Subdirección de Comedores adscrita a la Dirección de Prevención Social del Viceministerio de '+
@@ -343,7 +343,7 @@ function generarRuns(d, fd){
     'las medidas y/o peso de los alimentos, habiéndose realizado la respectiva prueba sensorial. ');
 
   B('SEGUNDO:');
-  N(' Se verificó el número de Envío y de tickets electrónicos que respaldan la entrega de las raciones '+
+  N(' Se verificó el número de envío y de tickets electrónicos que respaldan la entrega de las raciones '+
     'de alimentos, por lo que, se deja constancia que: a) En el tiempo de comida de desayuno: se entreg'+
     (es1(r_des)?'ó':'aron')+' '+numLetrasFem(r_des)+' ('+r_des+') '+(es1(r_des)?'ración':'raciones')+
     ' de alimentos según Envío de la presente fecha, con serie '+
