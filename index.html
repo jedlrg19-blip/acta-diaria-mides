@@ -114,7 +114,7 @@
       <div><label>Hora (HH:MM)</label><input id="hora_des" placeholder="06:30"></div>
       <div><label>Raciones</label><input id="rac_des" inputmode="numeric" placeholder="250"></div>
       <div><label>Serie Envío</label><input id="serie_des" placeholder="A"></div>
-      <div><label>N° Envío</label><input id="_des" placeholder="00045"></div>
+      <div><label>N° Envío</label><input id="envio_des" placeholder="00045"></div>
       <div><label>Ticket inicial</label><input id="tick_des_ini" placeholder="0001"></div>
       <div><label>Ticket final (auto)</label><input id="tick_des_fin" placeholder="0250"></div>
     </div>
@@ -127,7 +127,7 @@
       <div><label>Hora (HH:MM)</label><input id="hora_alm" placeholder="10:25"></div>
       <div><label>Raciones</label><input id="rac_alm" inputmode="numeric" placeholder="350"></div>
       <div><label>Serie Envío</label><input id="serie_alm" placeholder="B"></div>
-      <div><label>N° Envío</label><input id="_alm" placeholder="00046"></div>
+      <div><label>N° Envío</label><input id="envio_alm" placeholder="00046"></div>
       <div><label>Ticket inicial</label><input id="tick_alm_ini" placeholder="0001"></div>
       <div><label>Ticket final (auto)</label><input id="tick_alm_fin" placeholder="0350"></div>
     </div>
@@ -194,7 +194,7 @@
 <div class="foot">
   Asistente para la Generación de Actas — MIDES · Subdirección de Comedores.<br>
   Página estática: no envía ni almacena datos en ningún servidor. Cada usuario genera su propia acta.<br>
-  <span style="opacity:.6">Generador v8 · Arial Narrow 9 pt · ticket final automático · singular/plural y enterado(a)</span>
+  <span style="opacity:.6">Generador v9 · correcciones de redacción (CUI, coma, envío) · ticket final automático</span>
 </div>
 
 <script>
@@ -238,7 +238,7 @@ function numLetrasMasc(n){
   if(t.endsWith('y uno')) return t.slice(0,-3)+'un';
   return t;
 }
-function numLetras(s){
+function numLetrasEnvio(s){
   s=String(s==null?'':s).trim();
   if(!s) return 'cero';
   const sin=s.replace(/^0+/,'');
@@ -310,7 +310,7 @@ function generarRuns(d, fd){
   const r_des=fd.raciones_des||'0', r_alm=fd.raciones_alm||'0';
   let total=0; try{ total=parseInt(r_des,10)+parseInt(r_alm,10); }catch(e){ total=0; }
   const sicome=fd.sicome||'0', sistema=fd.sistema||'Sistema de Comedores -SICOME-';
-  const envd=fd._des||'0', enva=fd._alm||'0';
+  const envd=fd.envio_des||'0', enva=fd.envio_alm||'0';
   const tdi=fd.ticket_des_ini||'0', tdf=fd.ticket_des_fin||'0';
   const tai=fd.ticket_alm_ini||'0', taf=fd.ticket_alm_fin||'0';
   const serie_d=String(fd.serie_des||'').toUpperCase(), serie_a=String(fd.serie_alm||'').toUpperCase();
@@ -337,7 +337,7 @@ function generarRuns(d, fd){
     'suscripción de la presente acta, dejando constancia que se realizó el conteo de las raciones de '+
     'alimentos recibidas de la siguiente forma: a) Que las raciones de desayuno se recibieron a '+art_des+
     ' '+numLetrasFem(h_des)+' '+lbl_hd+' con '+numLetrasMasc(m_des)+' '+lbl_md+' ('+dos2(h_des)+':'+dos2(m_des)+
-    '); y, b) Que las raciones de almuerzo se recibieron a '+art_alm+' '+numLetrasFem(h_alm)+' '+lbl_ha+
+    '); y b) Que las raciones de almuerzo se recibieron a '+art_alm+' '+numLetrasFem(h_alm)+' '+lbl_ha+
     ' con '+numLetrasMasc(m_alm)+' '+lbl_ma+' ('+dos2(h_alm)+':'+dos2(m_alm)+'). Se deja constancia que en '+
     'cada tiempo de comida se verificó el cumplimiento de las características organolépticas, así como, '+
     'las medidas y/o peso de los alimentos, habiéndose realizado la respectiva prueba sensorial. ');
