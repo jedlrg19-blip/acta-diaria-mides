@@ -31,6 +31,7 @@
   input,select{width:100%;padding:9px 10px;background:#0b1422;color:var(--txt);
         border:1px solid var(--line);border-radius:8px;font-size:14px;}
   input:focus,select:focus{outline:none;border-color:var(--accent);}
+  input.locked,input[readonly]{background:#070d17;color:#94a3b8;cursor:not-allowed;border-style:dashed;}
   .row-toggle{display:flex;align-items:center;gap:10px;margin-top:6px;}
   .row-toggle input{width:auto;}
   .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;}
@@ -48,12 +49,29 @@
   .foot{color:var(--muted);font-size:11px;text-align:center;padding:18px;line-height:1.6;}
   .priv{background:#0d2137;border:1px dashed #475569;border-radius:10px;padding:10px 12px;
         font-size:12px;color:#cbd5e1;margin-bottom:16px;}
+  .tabbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab{background:#0f1b2e;border:1px solid var(--line);color:var(--muted);padding:11px 16px;
+       border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;flex:1;min-width:180px;
+       transition:background .15s,color .15s,border-color .15s;}
+  .tab:hover:not(.active){background:#13223a;color:#cbd5e1;}
+  .tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .subtabbar{display:flex;gap:8px;flex-wrap:wrap;}
+  .subtab{background:#0b1422;border:1px solid var(--line);color:var(--muted);padding:10px 14px;
+          border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;flex:1;min-width:200px;
+          transition:background .15s,color .15s,border-color .15s;}
+  .subtab:hover:not(.active){background:#13223a;color:#cbd5e1;}
+  .subtab.active{background:#0d2b45;color:#93c5fd;border-color:var(--accent);}
+  .split-note{background:#0d2137;border-left:3px solid var(--accent);border-radius:6px;
+              padding:8px 12px;font-size:12px;color:#cbd5e1;margin:2px 0 12px;}
+  .subhead{font-size:13px;color:#93c5fd;font-weight:700;margin:14px 0 8px;
+           border-top:1px solid var(--line);padding-top:12px;}
+  .subhead:first-child{border-top:none;padding-top:0;margin-top:0;}
 </style>
 </head>
 <body>
 <header>
   <h1>Asistente para la Generación de Actas</h1>
-  <p>Acta Diaria · Comedor Social — MIDES</p>
+  <p>Comedor Social — MIDES · Subdirección de Comedores</p>
 </header>
 
 <div class="wrap">
@@ -64,24 +82,41 @@
     (no en ningún servidor) para no volver a escribirlos.
   </div>
 
+  <!-- ───────────── PESTAÑAS ───────────── -->
+  <div class="tabbar">
+    <button class="tab active" id="tabbtn-general" onclick="switchTab('general')">📋 Acta Diaria (General)</button>
+    <button class="tab" id="tabbtn-fegua" onclick="switchTab('fegua')">🏛️ Comedor FEGUA</button>
+  </div>
+
   <!-- ───────────── MIS DATOS ───────────── -->
   <div class="card">
     <h2>👤 Mis datos</h2>
     <p class="sub">Escríbelos una vez y guárdalos en este dispositivo. Se rellenan solos la próxima vez.</p>
-    <div class="grid g2">
+    <div class="grid g3">
       <div><label>DPI / CUI (13 dígitos)</label><input id="dpi" inputmode="numeric" placeholder="0000 00000 0000"></div>
       <div><label>Nombre completo</label><input id="nombre" placeholder="Nombre del encargado(a)"></div>
-      <div><label>Comedor Social o Dependencia</label><input id="comedor" placeholder="Ej. Cobán"></div>
-      <div>
-        <label>Modalidad</label>
-        <select id="modalidad"><option>Fijo</option><option>Móvil</option></select>
-      </div>
-      <div><label>Municipio</label><input id="municipio" placeholder="Ej. Cobán"></div>
-      <div><label>Departamento</label><input id="departamento" placeholder="Ej. Alta Verapaz"></div>
-      <div><label>Dirección del comedor</label><input id="direccion" placeholder="Dirección completa"></div>
       <div>
         <label>Sexo</label>
         <select id="sexo"><option>Hombre</option><option>Mujer</option></select>
+      </div>
+    </div>
+    <div id="ubicGeneral">
+      <p class="subhead">📍 Ubicación del comedor (Acta General)</p>
+      <div class="grid g2">
+        <div><label>Comedor Social o Dependencia</label><input id="comedor" placeholder="Ej. Cobán"></div>
+        <div>
+          <label>Modalidad</label>
+          <select id="modalidad"><option>Fijo</option><option>Móvil</option></select>
+        </div>
+        <div>
+          <label>Departamento</label>
+          <select id="departamento" onchange="populateMunicipios(this.value)"><option value="">Selecciona un departamento…</option></select>
+        </div>
+        <div>
+          <label>Municipio</label>
+          <select id="municipio"><option value="">Selecciona un departamento primero…</option></select>
+        </div>
+        <div style="grid-column:1/-1"><label>Dirección del comedor</label><input id="direccion" placeholder="Dirección completa"></div>
       </div>
     </div>
     <div class="btns">
@@ -90,6 +125,9 @@
     </div>
     <div class="saved" id="savedMsg">✅ Datos guardados en este dispositivo.</div>
   </div>
+
+  <!-- ═══════════════ CONTENEDOR: ACTA GENERAL ═══════════════ -->
+  <div id="tabGeneral">
 
   <!-- ───────────── DATOS GENERALES ───────────── -->
   <div class="card">
@@ -116,7 +154,7 @@
       <div><label>Serie Envío</label><input id="serie_des" placeholder="A"></div>
       <div><label>N° Envío</label><input id="envio_des" placeholder="00045"></div>
       <div><label>Ticket inicial</label><input id="tick_des_ini" placeholder="0001"></div>
-      <div><label>Ticket final (auto)</label><input id="tick_des_fin" placeholder="0250"></div>
+      <div><label>Ticket final (auto) 🔒</label><input id="tick_des_fin" class="locked" placeholder="0250" readonly tabindex="-1"></div>
     </div>
   </div>
 
@@ -129,7 +167,7 @@
       <div><label>Serie Envío</label><input id="serie_alm" placeholder="B"></div>
       <div><label>N° Envío</label><input id="envio_alm" placeholder="00046"></div>
       <div><label>Ticket inicial</label><input id="tick_alm_ini" placeholder="0001"></div>
-      <div><label>Ticket final (auto)</label><input id="tick_alm_fin" placeholder="0350"></div>
+      <div><label>Ticket final (auto) 🔒</label><input id="tick_alm_fin" class="locked" placeholder="0350" readonly tabindex="-1"></div>
     </div>
   </div>
 
@@ -188,6 +226,180 @@
       <button class="b-ghost" onclick="cerrarPreview()">✖ Cerrar vista previa</button>
     </div>
   </div>
+
+  </div><!-- /#tabGeneral -->
+
+  <!-- ═══════════════ CONTENEDOR: COMEDOR FEGUA ═══════════════ -->
+  <div id="tabFegua" style="display:none">
+
+    <!-- Ubicación fija -->
+    <div class="card">
+      <h2>🏛️ Comedor Social Fijo FEGUA, Guatemala</h2>
+      <p class="sub">La ubicación es fija para este comedor y se aplica automáticamente al acta. Solo se toman tu <b>Nombre</b>, <b>DPI</b> y <b>Sexo</b> de "Mis datos".</p>
+      <div class="grid g2">
+        <div><label>Dirección (fija)</label><input class="locked" value="10ª avenida 21-22, zona 1, Guatemala" readonly tabindex="-1"></div>
+        <div><label>Departamento / Municipio (fijo)</label><input class="locked" value="Guatemala, Guatemala" readonly tabindex="-1"></div>
+      </div>
+    </div>
+
+    <!-- Selector de tipo de acta FEGUA -->
+    <div class="card">
+      <h2>Tipo de acta FEGUA</h2>
+      <p class="sub">Elige el formato según el día. Cada uno tiene su propia redacción legal.</p>
+      <div class="subtabbar">
+        <button class="subtab active" id="fsub-semana" onclick="switchFeguaSub('semana')">📅 Entre semana · desayuno + almuerzo</button>
+        <button class="subtab" id="fsub-finde" onclick="switchFeguaSub('finde')">🗓️ Fin de semana · solo almuerzo (CAR)</button>
+      </div>
+    </div>
+
+    <!-- ─────── FEGUA · ENTRE SEMANA ─────── -->
+    <div id="feguaSemana">
+      <div class="card">
+        <h2>1. Datos generales</h2>
+        <div class="grid g3">
+          <div><label>N° de Acta</label><input id="f_no_acta" inputmode="numeric" placeholder="Ej. 163"></div>
+          <div>
+            <label>Empresa proveedora</label>
+            <select id="f_empresa">
+              <option>Tecno Suministros, S.A.</option>
+              <option>Banquetes de Guatemala, S.A.</option>
+              <option>Proveedora de Alimentos El Rosario</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Desayuno</h2>
+        <div class="grid g4">
+          <div><label>Hora recepción (HH:MM)</label><input id="f_hora_des" placeholder="05:05"></div>
+          <div><label>Raciones</label><input id="f_rac_des" inputmode="numeric" placeholder="175"></div>
+          <div><label>Serie Envío</label><input id="f_serie_des" placeholder="A"></div>
+          <div><label>N° Envío</label><input id="f_envio_des" placeholder="0023542"></div>
+          <div><label>Ticket inicial</label><input id="f_tick_des_ini" placeholder="20971"></div>
+          <div><label>Ticket final (auto) 🔒</label><input id="f_tick_des_fin" class="locked" placeholder="21145" readonly tabindex="-1"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>3. Almuerzo</h2>
+        <div class="split-note">🎫 El almuerzo usa <b>un solo Envío</b> pero <b>dos rangos de tickets</b>: uno para los usuarios del Comedor FEGUA y otro para las Personas Migrantes Retornadas del –CAR–.</div>
+        <div class="grid g3">
+          <div><label>Hora recepción (HH:MM)</label><input id="f_hora_alm" placeholder="10:00"></div>
+          <div><label>Serie Envío</label><input id="f_serie_alm" placeholder="A"></div>
+          <div><label>N° Envío</label><input id="f_envio_alm" placeholder="0023543"></div>
+        </div>
+
+        <p class="subhead">👥 Usuarios del Comedor Social Fijo FEGUA</p>
+        <div class="grid g3">
+          <div><label>Raciones</label><input id="f_rac_com" inputmode="numeric" placeholder="300"></div>
+          <div><label>Ticket inicial</label><input id="f_tick_com_ini" placeholder="33680"></div>
+          <div><label>Ticket final (auto) 🔒</label><input id="f_tick_com_fin" class="locked" placeholder="33979" readonly tabindex="-1"></div>
+        </div>
+
+        <p class="subhead">🌎 Personas Guatemaltecas Migrantes Retornadas — Centro de Atención y Registro (CAR)</p>
+        <div class="grid g3">
+          <div><label>Raciones</label><input id="f_rac_car" inputmode="numeric" placeholder="25"></div>
+          <div><label>Ticket inicial</label><input id="f_tick_car_ini" placeholder="12187"></div>
+          <div><label>Ticket final (auto) 🔒</label><input id="f_tick_car_fin" class="locked" placeholder="12211" readonly tabindex="-1"></div>
+        </div>
+        <div class="split-note" style="margin-top:12px">Σ Total almuerzo (comedor + CAR): <b id="f_alm_total">—</b> · Total del día (desayuno + almuerzo): <b id="f_dia_total">—</b></div>
+      </div>
+
+      <div class="card">
+        <h2>4. Cierre y registro</h2>
+        <div><label>Usuarios registrados en el Sistema de Comedores -SICOME-</label><input id="f_sicome" inputmode="numeric" placeholder="499"></div>
+        <div class="row-toggle">
+          <input type="checkbox" id="f_usa_hojas" onchange="document.getElementById('f_box_hojas').style.display=this.checked?'grid':'none'">
+          <label style="margin:0">Hubo uso de Hojas de Registro</label>
+        </div>
+        <div id="f_box_hojas" class="grid g2" style="display:none;margin-top:10px">
+          <div><label>Usuarios en Hojas de Registro</label><input id="f_hojas" inputmode="numeric" placeholder="1"></div>
+          <div><label>N° de Folio</label><input id="f_folio" inputmode="numeric" placeholder="186"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>5. Incidencias del proveedor</h2>
+        <div class="grid g2">
+          <div><label>¿Hubo incumplimiento en raciones?</label><select id="f_incump"><option>NO</option><option>SÍ</option></select></div>
+          <div><label>¿Llegó en el horario establecido?</label><select id="f_horario"><option>SÍ</option><option>NO</option></select></div>
+        </div>
+      </div>
+    </div><!-- /#feguaSemana -->
+
+    <!-- ─────── FEGUA · FIN DE SEMANA ─────── -->
+    <div id="feguaFinde" style="display:none">
+      <div class="card">
+        <h2>1. Datos generales</h2>
+        <div class="grid g3">
+          <div><label>N° de Acta</label><input id="w_no_acta" inputmode="numeric" placeholder="Ej. 158"></div>
+          <div>
+            <label>Empresa proveedora</label>
+            <select id="w_empresa">
+              <option>Tecno Suministros, S.A.</option>
+              <option>Banquetes de Guatemala, S.A.</option>
+              <option>Proveedora de Alimentos El Rosario</option>
+            </select>
+          </div>
+        </div>
+        <p class="subhead">📜 Normativa aplicable</p>
+        <div><label>N° de Providencia (autoriza fines de semana)</label><input id="w_providencia" placeholder="VPS 0427-2025/BZS/vg"></div>
+      </div>
+
+      <div class="card">
+        <h2>2. Almuerzo — Centro de Atención y Registro (CAR)</h2>
+        <div class="split-note">🌎 El fin de semana se atiende únicamente a las Personas Migrantes Retornadas del –CAR–.</div>
+        <div class="grid g4">
+          <div><label>Raciones</label><input id="w_rac_alm" inputmode="numeric" placeholder="85"></div>
+          <div><label>Serie Envío</label><input id="w_serie_alm" placeholder="A"></div>
+          <div><label>N° Envío</label><input id="w_envio_alm" placeholder="0023127"></div>
+          <div><label>Ticket inicial</label><input id="w_tick_alm_ini" placeholder="11762"></div>
+          <div><label>Ticket final (auto) 🔒</label><input id="w_tick_alm_fin" class="locked" placeholder="11846" readonly tabindex="-1"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>3. Cierre y registro</h2>
+        <div><label>Usuarios registrados en el Sistema de Comedores -SICOME-</label><input id="w_sicome" inputmode="numeric" placeholder="85"></div>
+        <div class="row-toggle">
+          <input type="checkbox" id="w_usa_hojas" onchange="document.getElementById('w_box_hojas').style.display=this.checked?'grid':'none'">
+          <label style="margin:0">Hubo uso de Hojas de Registro</label>
+        </div>
+        <div id="w_box_hojas" class="grid g2" style="display:none;margin-top:10px">
+          <div><label>Usuarios en Hojas de Registro</label><input id="w_hojas" inputmode="numeric" placeholder="0"></div>
+          <div><label>N° de Folio</label><input id="w_folio" inputmode="numeric" placeholder=""></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4. Incidencias del proveedor</h2>
+        <div class="grid g2">
+          <div><label>¿Hubo incumplimiento en raciones?</label><select id="w_incump"><option>NO</option><option>SÍ</option></select></div>
+          <div><label>¿Llegó en el horario establecido?</label><select id="w_horario"><option>SÍ</option><option>NO</option></select></div>
+        </div>
+      </div>
+    </div><!-- /#feguaFinde -->
+
+    <!-- Botones FEGUA (compartidos) -->
+    <div class="btns" style="margin-bottom:10px">
+      <button class="b-ghost" id="btnFeguaPreview" onclick="feguaVistaPrevia()">👁️ Vista previa</button>
+      <button class="b-primary" id="btnFeguaGen" onclick="feguaGenerar()">📄 Generar y descargar acta</button>
+    </div>
+    <p class="hint">El acta se ajusta automáticamente para caber en una sola hoja carta, dejando siempre espacio para la firma. Revisa la vista previa antes de descargarla.</p>
+
+    <!-- Vista previa FEGUA -->
+    <div class="card" id="previewCardFegua" style="display:none">
+      <h2>👁️ Vista previa del acta FEGUA</h2>
+      <p class="sub" id="previewSubFegua">Así se verá el PDF. Si algo está mal, corrígelo arriba y vuelve a previsualizar.</p>
+      <iframe id="previewFrameFegua" style="width:100%;height:640px;border:1px solid var(--line);border-radius:8px;background:#fff"></iframe>
+      <div class="btns" style="margin-top:12px">
+        <button class="b-primary" id="btnFeguaGen2" onclick="feguaGenerar()">📄 Descargar este acta</button>
+        <button class="b-ghost" onclick="cerrarPreviewFegua()">✖ Cerrar vista previa</button>
+      </div>
+    </div>
+
+  </div><!-- /#tabFegua -->
 
 </div>
 
@@ -390,6 +602,191 @@ function generarRuns(d, fd){
   return R;
 }
 
+/* ═══════════════ Encabezado y cierre comunes de FEGUA ═══════════════ */
+function horaFrase(h,m){
+  const art=h===1?'la':'las', lh=h===1?'hora':'horas', lm=m===1?'minuto':'minutos';
+  return art+' '+numLetrasFem(h)+' '+lh+' con '+numLetrasMasc(m)+' '+lm+' ('+dos2(h)+':'+dos2(m)+')';
+}
+function feguaEncabezado(R, d, fd){
+  const B=t=>R.push({text:t,bold:true}), N=t=>R.push({text:t});
+  const encargado=String(d.nombre||'').toUpperCase().trim()||'NO REGISTRADO';
+  const cui=formatearCuiLegal(d.dpi);
+  const fem=(d.sexo||'Hombre')==='Mujer';
+  const constituid=fem?'constituida':'constituido';
+  const cargo='Encargado';   // puesto del contrato: no varía por género
+  const a=ahoraGT();
+  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const dia_l=numLetras(a.day), mes_n=MESES[a.month-1];
+  const hora_l=numLetrasFem(a.hour), min_l=numLetrasMasc(a.minute);
+  const lbl_h=a.hour===1?'hora':'horas', lbl_m=a.minute===1?'minuto':'minutos';
+  const art_h=a.hour===1?'la':'las';
+  const no_acta=fd.no_acta||'0';
+
+  B('ACTA NÚMERO '+numLetras(no_acta).toUpperCase()+' GUIÓN DOS MIL VEINTISÉIS ('+no_acta+'-'+a.year+').');
+  N(' En el municipio de Guatemala, departamento de Guatemala, siendo '+art_h+' '+hora_l+' '+lbl_h+
+    ' con '+min_l+' '+lbl_m+' ('+dos2(a.hour)+':'+dos2(a.minute)+') del día '+dia_l+' ('+a.day+') de '+
+    mes_n+' del año dos mil veintiséis ('+a.year+'), '+constituid+' en las instalaciones del ');
+  B('Comedor Social Fijo FEGUA, Guatemala,');
+  N(' ubicado en décima avenida veintiuno guión veintidós zona uno (10ª 21-22 1), del municipio de '+
+    'Guatemala, departamento de Guatemala; yo, ');
+  B(encargado);
+  N(', me identifico con Documento Personal de Identificación (DPI), con Código Único de Identificación '+
+    '(CUI) número, '+cui+', extendido por el Registro Nacional de las Personas de la República de '+
+    'Guatemala, actúo en calidad de ');
+  B(cargo+' de Comedores');
+  N(' de la Subdirección de Comedores adscrita a la Dirección de Prevención Social del Viceministerio de '+
+    'Prevención Social del Ministerio de Desarrollo Social, con el objeto de suscribir la presente Acta '+
+    'para hacer constar lo siguiente. ');
+}
+function feguaCierreFinal(R, fd){
+  const N=t=>R.push({text:t});
+  const es1=n=>parseInt(n,10)===1;
+  const fem=(fd._sexo||'Hombre')==='Mujer';
+  const enterado=fem?'enterada':'enterado';
+  const dur='15';   // duración fija: 15 minutos
+  const incump=(fd.incumplimiento||'NO')==='SÍ'?'SÍ':'NO';
+  const horario=(fd.horario||'SÍ')==='SÍ'?'SI':'NO';
+  N(' Se deja constancia que '+incump+' hubo incumplimiento por parte de la empresa proveedora, '+
+    'asimismo, se deja constancia que la empresa proveedora ('+horario+') llegó en el horario '+
+    'establecido para la entrega de las raciones de alimentos contratados. Sin más que hacer constar, '+
+    'se da por finalizada la presente acta en el mismo lugar y fecha, a los '+numLetrasMasc(dur)+' ('+dur+
+    ') '+(es1(dur)?'minuto':'minutos')+' de su inicio, a la que se procede a dar lectura por quien '+
+    'suscribe y, '+enterado+' de su contenido, objeto, validez y efectos legales, acepta, ratifica y '+
+    'firma en una (1) hoja de papel bond tamaño carta, debidamente autorizada por la Contraloría '+
+    'General de Cuentas, impresa únicamente en su anverso.');
+}
+
+/* ═══════════════ FEGUA · ENTRE SEMANA (desayuno + almuerzo dividido) ═══════════════ */
+function generarRunsFeguaSemana(d, fd){
+  const R=[]; const B=t=>R.push({text:t,bold:true}); const N=t=>R.push({text:t});
+  const es1=n=>parseInt(n,10)===1;
+  const empresaTxt=String(fd.empresa||'').toUpperCase();
+  fd._sexo=d.sexo;
+
+  feguaEncabezado(R, d, fd);
+
+  const [hd,md]=parseHora(fd.hora_des), [ha,ma]=parseHora(fd.hora_alm);
+  const rDes=fd.raciones_des||'0', serieD=String(fd.serie_des||'').toUpperCase(), envD=fd.envio_des||'0';
+  const tdi=fd.ticket_des_ini||'0', tdf=fd.ticket_des_fin||'0';
+  const serieA=String(fd.serie_alm||'').toUpperCase(), envA=fd.envio_alm||'0';
+  const rCom=fd.rac_com||'0', tci=fd.tick_com_ini||'0', tcf=fd.tick_com_fin||'0';
+  const rCar=fd.rac_car||'0', tri=fd.tick_car_ini||'0', trf=fd.tick_car_fin||'0';
+  const rAlm=(parseInt(rCom,10)||0)+(parseInt(rCar,10)||0);
+  const total=(parseInt(rDes,10)||0)+rAlm;
+  const sicome=fd.sicome||'0';
+
+  B('PRIMERO:');
+  N(' En cumplimiento a lo que establece el Manual Operativo del Programa Social \u201cComedor Social\u201d '+
+    'vigente, se procede a realizar el Cierre Administrativo Diario del Comedor Social, mediante la '+
+    'suscripción de la presente acta, dejando constancia que se realizó el conteo de las raciones de '+
+    'alimentos recibidas de la siguiente forma: a) Que las raciones de desayuno se recibieron a '+
+    horaFrase(hd,md)+' y b) Que las raciones de almuerzo se recibieron a '+horaFrase(ha,ma)+'. Se deja '+
+    'constancia que en cada tiempo de comida se verificó el cumplimiento de las características '+
+    'organolépticas, así como, las medidas y/o peso de los alimentos, habiéndose realizado la respectiva '+
+    'prueba sensorial. ');
+
+  B('SEGUNDO:');
+  N(' Se verificó el número de Envío y de tickets electrónicos que respaldan la entrega de las raciones '+
+    'de alimentos:');
+  B(' a) En el tiempo de comida de desayuno: se '+(es1(rDes)?'entregó':'entregaron')+' '+
+    numLetrasFem(rDes)+' ('+rDes+') '+(es1(rDes)?'ración':'raciones')+' de alimentos según Envío de la '+
+    'presente fecha serie '+serieD+' número '+numLetrasEnvio(envD)+' ('+envD+') de '+empresaTxt+
+    '; el rango de los tickets utilizados en este servicio fue del '+numLetrasEnvio(tdi)+' al '+
+    numLetrasEnvio(tdf)+' ('+tdi+' al '+tdf+'); b) En el tiempo de comida de almuerzo: se '+
+    (es1(rAlm)?'entregó':'entregaron')+' '+numLetrasFem(rAlm)+' ('+rAlm+') '+
+    (es1(rAlm)?'ración':'raciones')+' de alimentos según Envío de la presente fecha serie '+serieA+
+    ' número '+numLetrasEnvio(envA)+' ('+envA+') de '+empresaTxt+
+    '; a '+numLetrasFem(rAlm)+' ('+rAlm+') personas usuarias de los cuales '+numLetrasFem(rCom)+' ('+rCom+
+    ') '+(es1(rCom)?'ración de alimentos fue servida':'raciones de alimentos fueron servidas')+
+    ' a usuarios del Comedor Social Fijo FEGUA; el rango de los tickets utilizados en este servicio fue '+
+    'del '+numLetrasEnvio(tci)+' al '+numLetrasEnvio(tcf)+' ('+tci+' al '+tcf+') y '+numLetrasFem(rCar)+
+    ' ('+rCar+') '+(es1(rCar)
+      ? 'ración de alimentos, a una (1) Persona Guatemalteca Migrante Retornada, ubicada'
+      : 'raciones de alimentos, a '+numLetrasFem(rCar)+' ('+rCar+') Personas Guatemaltecas Migrantes Retornadas, ubicadas')+
+    ' en el Centro de Atención y Registro \u2013CAR\u2013 que se '+(es1(rCar)?'encuentra':'encuentran')+
+    ' dentro de las instalaciones de FEGUA, el rango de los tickets utilizados en este servicio fue del '+
+    numLetrasEnvio(tri)+' al '+numLetrasEnvio(trf)+' ('+tri+' al '+trf+') en el Centro de Atención y '+
+    'Registro \u2013CAR\u2013; Por lo que, se hace constar que efectivamente se '+
+    (es1(total)?'entregó':'entregaron')+' el día de hoy un total de '+numLetrasFem(total)+' ('+total+') '+
+    (es1(total)?'ración':'raciones')+' de alimentos');
+  N(' a la población objetivo y grupos de especial atención en el Comedor Social Fijo FEGUA. ');
+
+  B('TERCERO:');
+  N(' Al cierre del servicio de alimentación se hace constar que '+numLetrasFem(sicome)+' ('+sicome+') '+
+    (es1(sicome)?'persona usuaria fue registrada':'personas usuarias fueron registradas')+
+    ' en el Sistema de Comedores -SICOME-');
+  if(fd.sw_hojas){
+    const hojas=fd.hojas||'0', folio=fd.folio||'';
+    N(' y '+numLetrasFem(hojas)+' ('+hojas+') '+(es1(hojas)?'registrada e ingresada':'registradas e ingresadas')+
+      ' mediante el uso de las Hojas de Registro de Personas Usuarias'+
+      (folio?', del Folio '+numLetras(folio)+' ('+folio+')':'')+'. ');
+  } else { N('. '); }
+
+  B('CUARTO:');
+  feguaCierreFinal(R, fd);
+  return R;
+}
+
+/* ═══════════════ FEGUA · FIN DE SEMANA (solo almuerzo · CAR + providencia) ═══════════════ */
+function generarRunsFeguaFinde(d, fd){
+  const R=[]; const B=t=>R.push({text:t,bold:true}); const N=t=>R.push({text:t});
+  const es1=n=>parseInt(n,10)===1;
+  const empresaTxt=String(fd.empresa||'').toUpperCase();
+  fd._sexo=d.sexo;
+
+  feguaEncabezado(R, d, fd);
+
+  const prov=String(fd.providencia||'').trim()||'____';
+  const rAlm=fd.raciones_alm||'0', serieA=String(fd.serie_alm||'').toUpperCase(), envA=fd.envio_alm||'0';
+  const tai=fd.ticket_alm_ini||'0', taf=fd.ticket_alm_fin||'0';
+  const sicome=fd.sicome||'0';
+
+  B('PRIMERO:');
+  N(' de la normativa aplicable. El Manual Operativo del Programa Social \u201cComedor Social\u201d, '+
+    'establece en el punto 3 inciso 11 del procedimiento de Casos Especiales, que el Programa también da '+
+    'respuesta a medidas dictadas por organismos de derechos humanos, así como convenios '+
+    'interinstitucionales para contribuir a la seguridad alimentaria en beneficio de las personas en '+
+    'situación vulnerable, según instrucción girada en la ');
+  B('PROVIDENCIA No. '+prov);
+  N('.- Donde se establece la entrega de raciones alimentarias durante los fines de semana en el Comedor '+
+    'Social (FEGUA)/MIGRACIÓN. ');
+
+  B('SEGUNDO:');
+  N(' En cumplimiento a lo que establece el Manual Operativo del Programa Social \u201cComedor Social\u201d '+
+    'vigente, se procede a realizar el Cierre Administrativo Diario del Comedor Social, mediante la '+
+    'suscripción de la presente acta, dejando constancia que se realizó el conteo de las raciones de '+
+    'alimentos recibidas de la siguiente forma: Que a las raciones de almuerzo se les verificaron las '+
+    'características organolépticas, así como las medidas y/o peso de los alimentos, habiéndose realizado '+
+    'la respectiva prueba sensorial. ');
+
+  B('TERCERO:');
+  N(' Se verifica el número de envío y de tickets electrónicos que respaldan la entrega de las raciones '+
+    'alimenticias:');
+  B(' En el tiempo de comida de almuerzo: se '+(es1(rAlm)?'entregó':'entregaron')+' '+
+    numLetrasFem(rAlm)+' ('+rAlm+') '+(es1(rAlm)?'ración':'raciones')+' según envío de la presente fecha '+
+    'serie '+serieA+' número '+numLetrasEnvio(envA)+' ('+envA+') de '+empresaTxt+
+    '; el rango de los tickets utilizados en este servicio fue del '+numLetrasEnvio(tai)+' al '+
+    numLetrasEnvio(taf)+' ('+tai+' al '+taf+') en el Centro de Atención y Registro \u2013CAR\u2013; Por lo '+
+    'que, se hace constar que efectivamente se '+(es1(rAlm)?'entregó':'entregaron')+' el día de hoy un '+
+    'total de '+numLetrasFem(rAlm)+' ('+rAlm+') '+(es1(rAlm)?'ración':'raciones')+' de alimentos');
+  N(' a las personas integrantes de la población objetivo y grupos de especial atención. ');
+
+  B('CUARTO:');
+  N(' Al cierre, '+numLetrasFem(sicome)+' ('+sicome+') '+
+    (es1(sicome)?'persona usuaria fue registrada':'personas usuarias fueron registradas')+
+    ' en el Sistema de Comedores -SICOME-');
+  if(fd.sw_hojas){
+    const hojas=fd.hojas||'0', folio=fd.folio||'';
+    N(' y '+numLetrasFem(hojas)+' ('+hojas+') '+(es1(hojas)?'registrada e ingresada':'registradas e ingresadas')+
+      ' mediante el uso de las Hojas de Registro de Personas Usuarias'+
+      (folio?', del Folio '+numLetras(folio)+' ('+folio+')':'')+'. ');
+  } else { N('. '); }
+
+  B('QUINTO:');
+  feguaCierreFinal(R, fd);
+  return R;
+}
+
 /* ═══════════════ Fuente incrustada (Liberation Sans, sin ligaduras) ═══════════════
    Soluciona el bug de Roboto que se comía la "fi" ("identifco", "frma"). */
 (function(){
@@ -415,12 +812,30 @@ const MARGEN_DER  = 60;    // igual que el Word
 const MARGEN_INF  = 71;    // igual que el Word
 const GAP_FIRMA   = 70;    // separación texto–firma (≈ las líneas en blanco del Word)
 
-function construirDoc(d, fd, fs, lh, tracker){
-  const runs=generarRuns(d, fd);
-  const nombre=String(d.nombre||'').toUpperCase().trim() || 'NO REGISTRADO';
-  const cargo='Encargado';   // título NOMINAL del puesto (contrato): no varía por género
+function firmaGeneral(d, fd){
   const mun=capitalizar(d.municipio), dep=capitalizar(d.departamento);
   const modal=capitalizar(d.modalidad||'Fijo');
+  return [
+    { text:'Encargado de Comedor Social '+modal, alignment:'center' },
+    { text:mun+', '+dep, alignment:'center' },
+    { text:'Subdirección de Comedores', alignment:'center' },
+    { text:'Ministerio de Desarrollo Social', alignment:'center' }
+  ];
+}
+function firmaFegua(d, fd){
+  const cargo='Encargado';   // puesto del contrato: no varía por género
+  return [
+    { text:cargo+' de Comedor Social Fijo FEGUA, Guatemala.', alignment:'center' },
+    { text:'Ministerio de Desarrollo Social.', alignment:'center' }
+  ];
+}
+
+function construirDoc(d, fd, fs, lh, tracker, cfg){
+  cfg = cfg || {};
+  const runsFn = cfg.runsFn || generarRuns;
+  const firmaFn = cfg.firmaFn || firmaGeneral;
+  const runs=runsFn(d, fd);
+  const nombre=String(d.nombre||'').toUpperCase().trim() || 'NO REGISTRADO';
   const W=612-MARGEN_IZQ-MARGEN_DER;
   return {
     pageSize:'LETTER',
@@ -432,12 +847,8 @@ function construirDoc(d, fd, fs, lh, tracker){
       // 'unbreakable' evita que se parta entre páginas.
       { unbreakable:true, margin:[0,GAP_FIRMA,0,0], stack:[
         { canvas:[{ type:'line', x1:(W-W*0.48)/2, y1:0, x2:(W-W*0.48)/2+W*0.48, y2:0, lineWidth:0.6 }] },
-        { text:nombre, bold:true, alignment:'center', margin:[0,3,0,0] },
-        { text:cargo+' de Comedor Social '+modal, alignment:'center' },
-        { text:mun+', '+dep, alignment:'center' },
-        { text:'Subdirección de Comedores', alignment:'center' },
-        { text:'Ministerio de Desarrollo Social', alignment:'center' }
-      ]}
+        { text:nombre, bold:true, alignment:'center', margin:[0,3,0,0] }
+      ].concat(firmaFn(d, fd)) }
     ],
     pageBreakBefore:function(currentNode){
       if(tracker && currentNode && currentNode.pageNumbers){
@@ -450,10 +861,10 @@ function construirDoc(d, fd, fs, lh, tracker){
 
 /* Cuenta páginas de forma CONFIABLE: render sin comprimir + conteo de /Type /Page
    (con la maquetación de pdfmake como respaldo). */
-function contarPaginas(d, fd, fs, lh){
+function contarPaginas(d, fd, fs, lh, cfg){
   return new Promise(function(resolve){
     const tracker={maxPage:1};
-    const doc=construirDoc(d, fd, fs, lh, tracker);
+    const doc=construirDoc(d, fd, fs, lh, tracker, cfg);
     doc.compress=false;
     pdfMake.createPdf(doc).getBuffer(function(buf){
       let pags=tracker.maxPage;
@@ -471,19 +882,84 @@ function contarPaginas(d, fd, fs, lh){
    solo si hace falta, hasta que todo (texto + firma) cabe en UNA hoja. */
 const FS_MAX=9.0, FS_MIN=6.5, FS_STEP=0.25;
 
-async function autoAjustar(d, fd){
+async function autoAjustar(d, fd, cfg){
   let lh=1.5;   // interlineado del Word (1.5)
   for(let fs=FS_MAX; fs>=FS_MIN-0.001; fs-=FS_STEP){
-    const pags=await contarPaginas(d, fd, fs, lh);
+    const pags=await contarPaginas(d, fd, fs, lh, cfg);
     if(pags<=1){
-      return { doc:construirDoc(d, fd, fs, lh, {maxPage:1}), fs:Math.round(fs*100)/100 };
+      return { doc:construirDoc(d, fd, fs, lh, {maxPage:1}, cfg), fs:Math.round(fs*100)/100 };
     }
     lh=Math.max(1.05, lh-0.04);
   }
-  return { doc:construirDoc(d, fd, FS_MIN, 1.05, {maxPage:1}), fs:FS_MIN };
+  return { doc:construirDoc(d, fd, FS_MIN, 1.05, {maxPage:1}, cfg), fs:FS_MIN };
 }
 
-/* ═══════════════ localStorage (mis datos en este navegador) ═══════════════ */
+/* ═══════════════ Catálogo oficial: 22 departamentos y 340 municipios de Guatemala ═══════════════ */
+const GUATEMALA_DATA = {
+  "Alta Verapaz": ["Chahal","Chisec","Cobán","Fray Bartolomé de las Casas","Lanquín","Panzós","Raxruhá","San Cristóbal Verapaz","San Juan Chamelco","San Pedro Carchá","Santa Catalina La Tinta","Santa Cruz Verapaz","Santa María Cahabón","Senahú","Tactic","Tamahú","Tucurú"],
+  "Baja Verapaz": ["Cubulco","Granados","Purulhá","Rabinal","Salamá","San Jerónimo","San Miguel Chicaj","Santa Cruz el Chol"],
+  "Chimaltenango": ["Acatenango","Chimaltenango","El Tejar","Parramos","Patzicía","Patzún","Pochuta","San Andrés Itzapa","San José Poaquíl","San Juan Comalapa","San Martín Jilotepeque","San Pedro Yepocapa","Santa Apolonia","Santa Cruz Balanyá","Tecpán Guatemala","Zaragoza"],
+  "Chiquimula": ["Camotán","Chiquimula","Concepción Las Minas","Esquipulas","Ipala","Jocotán","Olopa","Quetzaltepeque","San Jacinto","San José La Arada","San Juan Ermita"],
+  "El Progreso": ["El Jícaro","Guastatoya","Morazán","San Agustín Acasaguastlán","San Antonio La Paz","San Cristóbal Acasaguastlán","Sanarate","Sansare"],
+  "Escuintla": ["Escuintla","Guanagazapa","Iztapa","La Democracia","La Gomera","Masagua","Nueva Concepción","Palín","San José","San Vicente Pacaya","Santa Lucía Cotzumalguapa","Sipacate","Siquinalá","Tiquisate"],
+  "Guatemala": ["Amatitlán","Chinautla","Chuarrancho","Fraijanes","Guatemala","Mixco","Palencia","San José del Golfo","San José Pinula","San Juan Sacatepéquez","San Miguel Petapa","San Pedro Ayampuc","San Pedro Sacatepéquez","San Raymundo","Santa Catarina Pinula","Villa Canales","Villa Nueva"],
+  "Huehuetenango": ["Aguacatán","Chiantla","Colotenango","Concepción Huista","Cuilco","Huehuetenango","Jacaltenango","La Democracia","La Libertad","Malacatancito","Nentón","Petatán","San Antonio Huista","San Gaspar Ixchil","San Ildefonso Ixtahuacán","San Juan Atitán","San Juan Ixcoy","San Mateo Ixtatán","San Miguel Acatán","San Pedro Nécta","San Pedro Soloma","San Rafael La Independencia","San Rafael Pétzal","San Sebastián Coatán","San Sebastián Huehuetenango","Santa Ana Huista","Santa Bárbara","Santa Cruz Barillas","Santa Eulalia","Santiago Chimaltenango","Tectitán","Todos Santos Cuchumatán","Unión Cantinil"],
+  "Izabal": ["El Estor","Livingston","Los Amates","Morales","Puerto Barrios"],
+  "Jalapa": ["Jalapa","Mataquescuintla","Monjas","San Carlos Alzatate","San Luis Jilotepeque","San Manuel Chaparrón","San Pedro Pinula"],
+  "Jutiapa": ["Agua Blanca","Asunción Mita","Atescatempa","Comapa","Conguaco","El Adelanto","El Progreso","Jalpatagua","Jerez","Jutiapa","Moyuta","Pasaco","Quesada","San José Acatempa","Santa Catarina Mita","Yupiltepeque","Zapotitlán"],
+  "Petén": ["Dolores","El Chal","Flores","La Libertad","Las Cruces","Melchor de Mencos","Poptún","San Andrés","San Benito","San Francisco","San José","San Luis","Santa Ana","Sayaxché"],
+  "Quetzaltenango": ["Almolonga","Cabricán","Cajolá","Cantel","Coatepeque","Colomba","Concepción Chiquirichapa","El Palmar","Flores Costa Cuca","Génova","Huitán","La Esperanza","Olintepeque","Palestina de Los Altos","Quetzaltenango","Salcajá","San Carlos Sija","San Francisco La Unión","San Juan Ostuncalco","San Martín Sacatepéquez","San Mateo","San Miguel Sigüilá","Sibilia","Zunil"],
+  "Quiché": ["Canillá","Chajul","Chicamán","Chiché","Chinique","Cunén","Ixcán","Joyabaj","Nebaj","Pachalum","Patzité","Sacapulas","San Andrés Sajcabajá","San Antonio Ilotenango","San Bartolomé Jocotenango","San Juan Cotzal","San Pedro Jocopilas","Santa Cruz del Quiché","Santo Tomás Chichicastenango","Uspantán","Zacualpa"],
+  "Retalhuleu": ["Champerico","El Asintal","Nuevo San Carlos","Retalhuleu","San Andrés Villa Seca","San Felipe","San Martín Zapotitlán","San Sebastián","Santa Cruz Muluá"],
+  "Sacatepéquez": ["Alotenango","Antigua Guatemala","Ciudad Vieja","Jocotenango","Magdalena Milpas Altas","Pastores","San Antonio Aguas Calientes","San Bartolomé Milpas Altas","San Lucas Sacatepéquez","San Miguel Dueñas","Santa Catarina Barahona","Santa Lucía Milpas Altas","Santa María de Jesús","Santiago Sacatepéquez","Santo Domingo Xenacoj","Sumpango"],
+  "San Marcos": ["Ayutla","Catarina","Comitancillo","Concepción Tutuapa","El Quetzal","El Tumbador","Esquipulas Palo Gordo","Ixchiguán","La Blanca","La Reforma","Malacatán","Nuevo Progreso","Ocós","Pajapita","Río Blanco","San Antonio Sacatepéquez","San Cristóbal Cucho","San José El Rodeo","San José Ojetenam","San Lorenzo","San Marcos","San Miguel Ixtahuacán","San Pablo","San Pedro Sacatepéquez","San Rafael Pie de la Cuesta","Sibinal","Sipacapa","Tacaná","Tajumulco","Tejutla"],
+  "Santa Rosa": ["Barberena","Casillas","Chiquimulilla","Cuilapa","Guazacapán","Nueva Santa Rosa","Oratorio","Pueblo Nuevo Viñas","San Juan Tecuaco","San Rafael Las Flores","Santa Cruz Naranjo","Santa María Ixhuatán","Santa Rosa de Lima","Taxisco"],
+  "Sololá": ["Concepción","Nahualá","Panajachel","San Andrés Semetabaj","San Antonio Palopó","San José Chacayá","San Juan La Laguna","San Lucas Tolimán","San Marcos La Laguna","San Pablo La Laguna","San Pedro La Laguna","Santa Catarina Ixtahuacán","Santa Catarina Palopó","Santa Clara La Laguna","Santa Cruz La Laguna","Santa Lucía Utatlán","Santa María Visitación","Santiago Atitlán","Sololá"],
+  "Suchitepéquez": ["Chicacao","Cuyotenango","Mazatenango","Patulul","Pueblo Nuevo","Río Bravo","Samayac","San Antonio Suchitepéquez","San Bernardino","San Francisco Zapotitlán","San Gabriel","San José El Ídolo","San José La Máquina","San Juan Bautista","San Lorenzo","San Miguel Panán","San Pablo Jocopilas","Santa Bárbara","Santo Domingo Suchitepéquez","Santo Tomás La Unión","Zunilito"],
+  "Totonicapán": ["Momostenango","San Andrés Xecul","San Bartolo","San Cristóbal Totonicapán","San Francisco El Alto","Santa Lucía La Reforma","Santa María Chiquimula","Totonicapán"],
+  "Zacapa": ["Cabañas","Estanzuela","Gualán","Huité","La Unión","Río Hondo","San Diego","San Jorge","Teculután","Usumatlán","Zacapa"]
+};
+
+function poblarDepartamentos(){
+  const sel=document.getElementById('departamento'); if(!sel) return;
+  Object.keys(GUATEMALA_DATA).sort((a,b)=>a.localeCompare(b,'es')).forEach(dep=>{
+    const o=document.createElement('option'); o.value=dep; o.textContent=dep; sel.appendChild(o);
+  });
+}
+function populateMunicipios(dep, preselect){
+  const sel=document.getElementById('municipio'); if(!sel) return;
+  const lista=GUATEMALA_DATA[dep]||[];
+  sel.innerHTML='';
+  const ph=document.createElement('option'); ph.value='';
+  ph.textContent = lista.length ? 'Selecciona un municipio…' : 'Selecciona un departamento primero…';
+  sel.appendChild(ph);
+  lista.forEach(m=>{
+    const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o);
+  });
+  if(preselect && lista.includes(preselect)) sel.value=preselect;
+}
+
+/* ═══════════════ Validación: solo números / solo alfanumérico en campos clave ═══════════════ */
+function soloDigitos(id){
+  const el=document.getElementById(id); if(!el) return;
+  el.setAttribute('inputmode','numeric');
+  el.addEventListener('input', ()=>{ const v0=el.value; const v=v0.replace(/\D+/g,''); if(v!==v0) el.value=v; });
+  el.addEventListener('keypress', e=>{ if(e.key.length===1 && !/[0-9]/.test(e.key)) e.preventDefault(); });
+}
+function soloAlfanumerico(id){
+  const el=document.getElementById(id); if(!el) return;
+  el.addEventListener('input', ()=>{ const v0=el.value; const v=v0.replace(/[^0-9A-Za-zÀ-ÿ]+/g,''); if(v!==v0) el.value=v; });
+}
+function wireValidaciones(){
+  ['dpi','no_acta','rac_des','envio_des','tick_des_ini','rac_alm','envio_alm','tick_alm_ini','sicome','hojas',
+   'f_no_acta','f_rac_des','f_envio_des','f_tick_des_ini','f_envio_alm','f_rac_com','f_tick_com_ini',
+   'f_rac_car','f_tick_car_ini','f_sicome','f_hojas','f_folio',
+   'w_no_acta','w_rac_alm','w_envio_alm','w_tick_alm_ini','w_sicome','w_hojas','w_folio']
+    .forEach(soloDigitos);
+  ['serie_des','serie_alm','f_serie_des','f_serie_alm','w_serie_alm'].forEach(soloAlfanumerico);
+}
+
+
 const KEY='mides_acta_misdatos_v1';
 const CAMPOS_DATOS=['dpi','nombre','comedor','modalidad','municipio','departamento','direccion','sexo'];
 
@@ -504,14 +980,27 @@ function guardarDatos(){
 }
 function borrarDatos(){
   try{ localStorage.removeItem(KEY); }catch(e){}
-  CAMPOS_DATOS.forEach(c=>{ const el=document.getElementById(c); if(el) el.value=(c==='modalidad'?'Fijo':(c==='sexo'?'Hombre':'')); });
+  CAMPOS_DATOS.forEach(c=>{
+    const el=document.getElementById(c); if(!el) return;
+    if(c==='modalidad') el.value='Fijo';
+    else if(c==='sexo') el.value='Hombre';
+    else if(c==='departamento'){ el.value=''; populateMunicipios(''); }
+    else if(c==='municipio'){ /* ya se resetea junto con departamento */ }
+    else el.value='';
+  });
   alert('Tus datos guardados se borraron de este dispositivo.');
 }
 function precargarDatos(){
   let obj=null;
   try{ obj=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
   if(!obj) return;
-  CAMPOS_DATOS.forEach(c=>{ const el=document.getElementById(c); if(el && obj[c]!=null) el.value=obj[c]; });
+  CAMPOS_DATOS.forEach(c=>{
+    if(c==='departamento' || c==='municipio') return; // se manejan juntos abajo
+    const el=document.getElementById(c); if(el && obj[c]!=null) el.value=obj[c];
+  });
+  const depEl=document.getElementById('departamento');
+  if(depEl && obj.departamento){ depEl.value=obj.departamento; }
+  populateMunicipios(obj.departamento||'', obj.municipio||'');
 }
 
 /* ═══════════════ Helpers UI ═══════════════ */
@@ -528,12 +1017,26 @@ function recalcTicketFinal(racId, iniId, finId){
   if(finEl) finEl.value=String(fin).padStart(iniStr.replace(/\D/g,'').length, '0');
 }
 function wireTickets(){
-  [['rac_des','tick_des_ini','tick_des_fin'],['rac_alm','tick_alm_ini','tick_alm_fin']].forEach(function(t){
+  [['rac_des','tick_des_ini','tick_des_fin'],['rac_alm','tick_alm_ini','tick_alm_fin'],
+   ['f_rac_des','f_tick_des_ini','f_tick_des_fin'],['f_rac_com','f_tick_com_ini','f_tick_com_fin'],
+   ['f_rac_car','f_tick_car_ini','f_tick_car_fin'],['w_rac_alm','w_tick_alm_ini','w_tick_alm_fin']
+  ].forEach(function(t){
     const rec=function(){ recalcTicketFinal(t[0],t[1],t[2]); };
     const re=document.getElementById(t[0]), ie=document.getElementById(t[1]);
     if(re) re.addEventListener('input', rec);
     if(ie) ie.addEventListener('input', rec);
   });
+  // Totales en vivo del almuerzo FEGUA entre semana
+  ['f_rac_des','f_rac_com','f_rac_car'].forEach(function(id){
+    const el=document.getElementById(id); if(el) el.addEventListener('input', actualizarTotalesFegua);
+  });
+}
+function actualizarTotalesFegua(){
+  const rd=parseInt(val('f_rac_des'),10)||0, rc=parseInt(val('f_rac_com'),10)||0, rr=parseInt(val('f_rac_car'),10)||0;
+  const alm=rc+rr, dia=rd+alm;
+  const a=document.getElementById('f_alm_total'), b=document.getElementById('f_dia_total');
+  if(a) a.textContent=alm?alm:'—';
+  if(b) b.textContent=dia?dia:'—';
 }
 
 function setBtns(loading){
@@ -546,9 +1049,62 @@ function setBtns(loading){
   if(b2) b2.textContent = loading ? '⏳ Generando...' : '📄 Descargar este acta';
 }
 
+/* ═══════════════ Validación de campos obligatorios y coherencia de datos ═══════════════ */
+const CAMPOS_OBLIGATORIOS = [
+  ['comedor','Comedor Social o Dependencia'],
+  ['departamento','Departamento'],
+  ['municipio','Municipio'],
+  ['direccion','Dirección del comedor'],
+  ['no_acta','N° de Acta'],
+  ['hora_des','Hora de Desayuno'],
+  ['rac_des','Raciones de Desayuno'],
+  ['serie_des','Serie Envío (Desayuno)'],
+  ['envio_des','N° Envío (Desayuno)'],
+  ['tick_des_ini','Ticket inicial (Desayuno)'],
+  ['hora_alm','Hora de Almuerzo'],
+  ['rac_alm','Raciones de Almuerzo'],
+  ['serie_alm','Serie Envío (Almuerzo)'],
+  ['envio_alm','N° Envío (Almuerzo)'],
+  ['tick_alm_ini','Ticket inicial (Almuerzo)'],
+  ['sicome','Usuarios registrados en el sistema']
+];
+
 function leerFormData(){
   const d=leerMisDatos();
-  if(!d.nombre || !d.dpi){ alert('Escribe al menos tu Nombre y DPI en "Mis datos".'); return null; }
+  if(!d.nombre || !d.dpi){ alert('⚠️ Escribe al menos tu Nombre y DPI en "Mis datos".'); return null; }
+
+  // Recalcula los tickets finales por si quedaron desactualizados (campo bloqueado).
+  recalcTicketFinal('rac_des','tick_des_ini','tick_des_fin');
+  recalcTicketFinal('rac_alm','tick_alm_ini','tick_alm_fin');
+
+  const usaHojas=document.getElementById('usa_hojas').checked;
+
+  // 1) Campos obligatorios: ninguno puede quedar vacío.
+  const faltantes=[];
+  CAMPOS_OBLIGATORIOS.forEach(([id,label])=>{ if(!val(id)) faltantes.push(label); });
+  if(usaHojas && !val('hojas')) faltantes.push('Usuarios en Hojas de Registro');
+  if(!val('tick_des_fin')) faltantes.push('Ticket final Desayuno (revisa Raciones y Ticket inicial)');
+  if(!val('tick_alm_fin')) faltantes.push('Ticket final Almuerzo (revisa Raciones y Ticket inicial)');
+  if(faltantes.length){
+    alert('⚠️ No se puede generar el acta. Faltan los siguientes campos:\n\n• '+faltantes.join('\n• '));
+    return null;
+  }
+
+  // 2) Coherencia: usuarios registrados (sistema + hojas) debe coincidir con el total de raciones servidas.
+  const racDes=parseInt(val('rac_des'),10)||0, racAlm=parseInt(val('rac_alm'),10)||0;
+  const totalRaciones=racDes+racAlm;
+  const sicomeN=parseInt(val('sicome'),10)||0;
+  const hojasN=usaHojas?(parseInt(val('hojas'),10)||0):0;
+  const totalUsuarios=sicomeN+hojasN;
+  if(totalUsuarios!==totalRaciones){
+    alert('⚠️ No se puede generar el acta: los usuarios registrados no coinciden con el total de raciones.\n\n'+
+      'Total de raciones servidas (desayuno + almuerzo): '+totalRaciones+'\n'+
+      'Usuarios registrados en el sistema: '+sicomeN+(usaHojas?'\nUsuarios en Hojas de Registro: '+hojasN:'')+'\n'+
+      'Suma actual: '+totalUsuarios+'\n\n'+
+      'Corrige los campos para que la suma sea exactamente '+totalRaciones+'.');
+    return null;
+  }
+
   const fd={
     no_acta:val('no_acta'), sexo:(d.sexo||'Hombre'), empresa:val('empresa'),
     hora_des:val('hora_des'), raciones_des:val('rac_des'), serie_des:val('serie_des'),
@@ -556,7 +1112,7 @@ function leerFormData(){
     hora_alm:val('hora_alm'), raciones_alm:val('rac_alm'), serie_alm:val('serie_alm'),
     envio_alm:val('envio_alm'), ticket_alm_ini:val('tick_alm_ini'), ticket_alm_fin:val('tick_alm_fin'),
     sistema:val('sistema'), sicome:val('sicome'),
-    sw_hojas:document.getElementById('usa_hojas').checked, hojas:val('hojas'),
+    sw_hojas:usaHojas, hojas:val('hojas'),
     incumplimiento:val('incump'), horario:val('horario')
   };
   return {d, fd};
@@ -600,7 +1156,172 @@ function cerrarPreview(){
   document.getElementById('previewFrame').src='';
 }
 
-window.addEventListener('DOMContentLoaded', function(){ precargarDatos(); wireTickets(); });
+/* ═══════════════════════════════════════════════════════════════════════
+   ═══════════════          MÓDULO COMEDOR FEGUA            ═══════════════
+   ═══════════════════════════════════════════════════════════════════════ */
+let FEGUA_SUB='semana';
+
+function switchTab(which){
+  const g=(which==='general');
+  document.getElementById('tabGeneral').style.display=g?'block':'none';
+  document.getElementById('tabFegua').style.display=g?'none':'block';
+  document.getElementById('ubicGeneral').style.display=g?'block':'none';
+  document.getElementById('tabbtn-general').classList.toggle('active',g);
+  document.getElementById('tabbtn-fegua').classList.toggle('active',!g);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function switchFeguaSub(which){
+  const s=(which==='semana');
+  document.getElementById('feguaSemana').style.display=s?'block':'none';
+  document.getElementById('feguaFinde').style.display=s?'none':'block';
+  document.getElementById('fsub-semana').classList.toggle('active',s);
+  document.getElementById('fsub-finde').classList.toggle('active',!s);
+  FEGUA_SUB=which;
+  cerrarPreviewFegua();
+}
+
+function setBtnsFegua(loading){
+  ['btnFeguaPreview','btnFeguaGen','btnFeguaGen2'].forEach(id=>{
+    const b=document.getElementById(id); if(b) b.disabled=loading;
+  });
+  document.getElementById('btnFeguaPreview').textContent = loading ? '⏳ Ajustando...' : '👁️ Vista previa';
+  document.getElementById('btnFeguaGen').textContent     = loading ? '⏳ Generando...' : '📄 Generar y descargar acta';
+  const b2=document.getElementById('btnFeguaGen2');
+  if(b2) b2.textContent = loading ? '⏳ Generando...' : '📄 Descargar este acta';
+}
+
+/* ─────── Lector · FEGUA entre semana ─────── */
+function leerFeguaSemana(){
+  const d=leerMisDatos();
+  if(!d.nombre || !d.dpi){ alert('⚠️ Escribe al menos tu Nombre y DPI en "Mis datos".'); return null; }
+
+  recalcTicketFinal('f_rac_des','f_tick_des_ini','f_tick_des_fin');
+  recalcTicketFinal('f_rac_com','f_tick_com_ini','f_tick_com_fin');
+  recalcTicketFinal('f_rac_car','f_tick_car_ini','f_tick_car_fin');
+
+  const usaHojas=document.getElementById('f_usa_hojas').checked;
+  const OBL=[
+    ['f_no_acta','N° de Acta'],
+    ['f_hora_des','Hora de Desayuno'],['f_rac_des','Raciones de Desayuno'],
+    ['f_serie_des','Serie Envío (Desayuno)'],['f_envio_des','N° Envío (Desayuno)'],
+    ['f_tick_des_ini','Ticket inicial (Desayuno)'],
+    ['f_hora_alm','Hora de Almuerzo'],['f_serie_alm','Serie Envío (Almuerzo)'],['f_envio_alm','N° Envío (Almuerzo)'],
+    ['f_rac_com','Raciones — Comedor FEGUA'],['f_tick_com_ini','Ticket inicial — Comedor FEGUA'],
+    ['f_rac_car','Raciones — CAR (Migrantes)'],['f_tick_car_ini','Ticket inicial — CAR (Migrantes)'],
+    ['f_sicome','Usuarios en SICOME']
+  ];
+  const faltantes=[];
+  OBL.forEach(([id,label])=>{ if(!val(id)) faltantes.push(label); });
+  if(usaHojas && !val('f_hojas')) faltantes.push('Usuarios en Hojas de Registro');
+  if(faltantes.length){
+    alert('⚠️ No se puede generar el acta. Faltan los siguientes campos:\n\n• '+faltantes.join('\n• '));
+    return null;
+  }
+
+  const rDes=parseInt(val('f_rac_des'),10)||0, rCom=parseInt(val('f_rac_com'),10)||0, rCar=parseInt(val('f_rac_car'),10)||0;
+  const totalRaciones=rDes+rCom+rCar;
+  const sicomeN=parseInt(val('f_sicome'),10)||0;
+  const hojasN=usaHojas?(parseInt(val('f_hojas'),10)||0):0;
+  if(sicomeN+hojasN!==totalRaciones){
+    alert('⚠️ Los usuarios registrados no coinciden con el total de raciones.\n\n'+
+      'Total de raciones (desayuno '+rDes+' + comedor '+rCom+' + CAR '+rCar+'): '+totalRaciones+'\n'+
+      'SICOME: '+sicomeN+(usaHojas?'\nHojas de Registro: '+hojasN:'')+'\nSuma actual: '+(sicomeN+hojasN)+'\n\n'+
+      'Corrige para que la suma sea exactamente '+totalRaciones+'.');
+    return null;
+  }
+
+  const fd={
+    no_acta:val('f_no_acta'), empresa:val('f_empresa'),
+    hora_des:val('f_hora_des'), raciones_des:val('f_rac_des'),
+    serie_des:val('f_serie_des'), envio_des:val('f_envio_des'),
+    ticket_des_ini:val('f_tick_des_ini'), ticket_des_fin:val('f_tick_des_fin'),
+    hora_alm:val('f_hora_alm'), serie_alm:val('f_serie_alm'), envio_alm:val('f_envio_alm'),
+    rac_com:val('f_rac_com'), tick_com_ini:val('f_tick_com_ini'), tick_com_fin:val('f_tick_com_fin'),
+    rac_car:val('f_rac_car'), tick_car_ini:val('f_tick_car_ini'), tick_car_fin:val('f_tick_car_fin'),
+    sicome:val('f_sicome'), sw_hojas:usaHojas, hojas:val('f_hojas'), folio:val('f_folio'),
+    incumplimiento:val('f_incump'), horario:val('f_horario')
+  };
+  return { d, fd, cfg:{ runsFn:generarRunsFeguaSemana, firmaFn:firmaFegua } };
+}
+
+/* ─────── Lector · FEGUA fin de semana ─────── */
+function leerFeguaFinde(){
+  const d=leerMisDatos();
+  if(!d.nombre || !d.dpi){ alert('⚠️ Escribe al menos tu Nombre y DPI en "Mis datos".'); return null; }
+
+  recalcTicketFinal('w_rac_alm','w_tick_alm_ini','w_tick_alm_fin');
+
+  const usaHojas=document.getElementById('w_usa_hojas').checked;
+  const OBL=[
+    ['w_no_acta','N° de Acta'],['w_providencia','N° de Providencia'],
+    ['w_rac_alm','Raciones de Almuerzo (CAR)'],['w_serie_alm','Serie Envío'],['w_envio_alm','N° Envío'],
+    ['w_tick_alm_ini','Ticket inicial'],['w_sicome','Usuarios en SICOME']
+  ];
+  const faltantes=[];
+  OBL.forEach(([id,label])=>{ if(!val(id)) faltantes.push(label); });
+  if(usaHojas && !val('w_hojas')) faltantes.push('Usuarios en Hojas de Registro');
+  if(faltantes.length){
+    alert('⚠️ No se puede generar el acta. Faltan los siguientes campos:\n\n• '+faltantes.join('\n• '));
+    return null;
+  }
+
+  const totalRaciones=parseInt(val('w_rac_alm'),10)||0;
+  const sicomeN=parseInt(val('w_sicome'),10)||0;
+  const hojasN=usaHojas?(parseInt(val('w_hojas'),10)||0):0;
+  if(sicomeN+hojasN!==totalRaciones){
+    alert('⚠️ Los usuarios registrados no coinciden con el total de raciones.\n\n'+
+      'Total de raciones (almuerzo CAR): '+totalRaciones+'\n'+
+      'SICOME: '+sicomeN+(usaHojas?'\nHojas de Registro: '+hojasN:'')+'\nSuma actual: '+(sicomeN+hojasN)+'\n\n'+
+      'Corrige para que la suma sea exactamente '+totalRaciones+'.');
+    return null;
+  }
+
+  const fd={
+    no_acta:val('w_no_acta'), empresa:val('w_empresa'),
+    providencia:val('w_providencia'),
+    raciones_alm:val('w_rac_alm'), serie_alm:val('w_serie_alm'), envio_alm:val('w_envio_alm'),
+    ticket_alm_ini:val('w_tick_alm_ini'), ticket_alm_fin:val('w_tick_alm_fin'),
+    sicome:val('w_sicome'), sw_hojas:usaHojas, hojas:val('w_hojas'), folio:val('w_folio'),
+    incumplimiento:val('w_incump'), horario:val('w_horario')
+  };
+  return { d, fd, cfg:{ runsFn:generarRunsFeguaFinde, firmaFn:firmaFegua } };
+}
+
+function leerFeguaActivo(){ return FEGUA_SUB==='semana' ? leerFeguaSemana() : leerFeguaFinde(); }
+
+async function feguaVistaPrevia(){
+  const form=leerFeguaActivo(); if(!form) return;
+  setBtnsFegua(true);
+  try{
+    const {doc, fs}=await autoAjustar(form.d, form.fd, form.cfg);
+    pdfMake.createPdf(doc).getDataUrl(url=>{
+      document.getElementById('previewFrameFegua').src=url;
+      document.getElementById('previewSubFegua').textContent =
+        'Así se verá el PDF (ajustado a '+fs+' pt para caber en una hoja). Si algo está mal, corrígelo arriba y vuelve a previsualizar.';
+      document.getElementById('previewCardFegua').style.display='block';
+      document.getElementById('previewCardFegua').scrollIntoView({behavior:'smooth',block:'start'});
+      setBtnsFegua(false);
+    });
+  }catch(e){ setBtnsFegua(false); alert('No se pudo generar la vista previa: '+e); }
+}
+
+async function feguaGenerar(){
+  const form=leerFeguaActivo(); if(!form) return;
+  setBtnsFegua(true);
+  try{
+    const {doc}=await autoAjustar(form.d, form.fd, form.cfg);
+    const na=(form.fd.no_acta||'acta').replace(/[^0-9A-Za-z_-]/g,'');
+    const suf=FEGUA_SUB==='semana'?'Semana':'FinDeSemana';
+    pdfMake.createPdf(doc).download('Acta_FEGUA_'+suf+'_'+na+'.pdf', ()=>{ setBtnsFegua(false); });
+  }catch(e){ setBtnsFegua(false); alert('No se pudo generar el acta: '+e); }
+}
+
+function cerrarPreviewFegua(){
+  const c=document.getElementById('previewCardFegua'); if(c) c.style.display='none';
+  const f=document.getElementById('previewFrameFegua'); if(f) f.src='';
+}
+
+window.addEventListener('DOMContentLoaded', function(){ poblarDepartamentos(); populateMunicipios(''); wireValidaciones(); precargarDatos(); wireTickets(); });
 </script>
 </body>
 </html>
