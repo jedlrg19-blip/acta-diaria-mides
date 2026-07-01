@@ -492,6 +492,33 @@ function ahoraGT(){
 function dos2(n){ return String(n).padStart(2,'0'); }
 function parseHora(s){ try{ const a=String(s).split(':'); return [parseInt(a[0],10)||0, parseInt(a[1],10)||0]; }catch(e){ return [0,0]; } }
 
+/* ═══════════════ Candado de hora de emisión ═══════════════
+   Los servicios de alimentación terminan a las 14:00; el acta (Cierre
+   Administrativo Diario) NO puede emitirse antes de esa hora. Se valida
+   contra la hora oficial de Guatemala. La vista previa sí queda permitida
+   para que el personal pueda preparar los datos con anticipación. */
+const HORA_EMISION_H = 14;   // hora mínima permitida para emitir (formato 24h)
+const HORA_EMISION_M = 0;
+function emisionPermitida(){
+  const a = ahoraGT();
+  const ahora = a.hour*60 + a.minute;
+  const limite = HORA_EMISION_H*60 + HORA_EMISION_M;
+  return { ok: ahora >= limite, hora: dos2(a.hour)+':'+dos2(a.minute) };
+}
+function bloquearSiAntesDeHora(){
+  const e = emisionPermitida();
+  if(!e.ok){
+    const permitida = dos2(HORA_EMISION_H)+':'+dos2(HORA_EMISION_M);
+    alert('\u23F0 A\u00fan no es posible emitir el acta.\n\n'+
+      'Los servicios de alimentaci\u00f3n terminan a las '+permitida+' horas, por lo que el acta '+
+      '(Cierre Administrativo Diario) solo puede emitirse a partir de esa hora.\n\n'+
+      'Hora actual (Guatemala): '+e.hora+'\n'+
+      'Podr\u00e1s emitir el acta a partir de las '+permitida+'.');
+    return true;   // bloqueado
+  }
+  return false;
+}
+
 /* ═══════════════ Construcción del acta (runs con negritas) ═══════════════ */
 function generarRuns(d, fd){
   const R=[]; const B=(t)=>R.push({text:t,bold:true}); const N=(t)=>R.push({text:t});
@@ -540,7 +567,7 @@ function generarRuns(d, fd){
     cui+', emitido por el Registro Nacional de las Personas de la República de Guatemala, y actúo en mi calidad de ');
   B(cargo+' de Comedores');
   N(' de la Subdirección de Comedores adscrita a la Dirección de Prevención Social del Viceministerio de '+
-    'Prevención Social del Ministerio de Desarrollo Social, con el objeto de suscribir la presente Acta '+
+    'Protección Social del Ministerio de Desarrollo Social, con el objeto de suscribir la presente Acta '+
     'para hacer constar lo siguiente: ');
 
   B('PRIMERO:');
@@ -635,7 +662,7 @@ function feguaEncabezado(R, d, fd){
     'Guatemala, actúo en calidad de ');
   B(cargo+' de Comedores');
   N(' de la Subdirección de Comedores adscrita a la Dirección de Prevención Social del Viceministerio de '+
-    'Prevención Social del Ministerio de Desarrollo Social, con el objeto de suscribir la presente Acta '+
+    'Protección Social del Ministerio de Desarrollo Social, con el objeto de suscribir la presente Acta '+
     'para hacer constar lo siguiente. ');
 }
 function feguaCierreFinal(R, fd){
@@ -1139,6 +1166,7 @@ async function vistaPrevia(){
 }
 
 async function generarActa(){
+  if(bloquearSiAntesDeHora()) return;
   const form=leerFormData(); if(!form) return;
   setBtns(true);
   try{
@@ -1306,6 +1334,7 @@ async function feguaVistaPrevia(){
 }
 
 async function feguaGenerar(){
+  if(bloquearSiAntesDeHora()) return;
   const form=leerFeguaActivo(); if(!form) return;
   setBtnsFegua(true);
   try{
